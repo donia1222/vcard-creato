@@ -1,23 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Server-side proxy → el browser llama a Vercel, Vercel llama al PHP
-// Así el browser nunca hace cross-origin y no hay CORS
-
-const PHP_API = process.env.PHP_API_URL || 'https://web.lweb.ch/vcar/api/cards.php'
+const PHP_API = process.env.PHP_API_URL || 'https://web.lweb.ch/vcard/api/cards.php'
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
+
     const res = await fetch(PHP_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    const data = await res.json()
+
+    // Leer como texto primero para poder debuggear si no es JSON válido
+    const text = await res.text()
+    console.log('[proxy POST] status:', res.status, 'body:', text.slice(0, 300))
+
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch {
+      return NextResponse.json(
+        { error: 'PHP response is not JSON', raw: text.slice(0, 500) },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(data, { status: res.status })
-  } catch (err) {
-    console.error('[proxy POST /api/cards]', err)
-    return NextResponse.json({ error: 'Error del servidor' }, { status: 500 })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[proxy POST] fetch failed:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 
@@ -30,7 +43,6 @@ export async function GET(req: NextRequest) {
     const url = `${PHP_API}?id=${encodeURIComponent(id)}${action ? `&action=${action}` : ''}`
     const res = await fetch(url, { cache: 'no-store' })
 
-    // VCF download — reenviar el stream binario
     if (action === 'vcf') {
       const blob = await res.blob()
       return new NextResponse(blob, {
@@ -42,10 +54,23 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const data = await res.json()
+    const text = await res.text()
+    console.log('[proxy GET] status:', res.status, 'body:', text.slice(0, 300))
+
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch {
+      return NextResponse.json(
+        { error: 'PHP response is not JSON', raw: text.slice(0, 500) },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(data, { status: res.status })
-  } catch (err) {
-    console.error('[proxy GET /api/cards]', err)
-    return NextResponse.json({ error: 'Error del servidor' }, { status: 500 })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[proxy GET] fetch failed:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
