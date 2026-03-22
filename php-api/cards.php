@@ -8,23 +8,20 @@
 //  GET  /cards.php?id=xxx&action=vcf  → descargar .vcf
 // ============================================================
 
-require_once __DIR__ . '/config.php';
-
-// ── CORS ──────────────────────────────────────────────────
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, ALLOWED_ORIGINS, true)) {
-    header('Access-Control-Allow-Origin: ' . $origin);
-} else {
-    header('Access-Control-Allow-Origin: ' . ALLOWED_ORIGINS[0]);
-}
+// ── CORS — SIEMPRE LO PRIMERO, antes de cualquier output ──
+// Acepta cualquier origen (ajusta si quieres restringir)
+header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
 header('Access-Control-Max-Age: 86400');
 
+// Responde inmediatamente al preflight OPTIONS y termina
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+
+require_once __DIR__ . '/config.php';
 
 // ── DB connection ─────────────────────────────────────────
 function getDB(): PDO {

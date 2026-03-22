@@ -1,10 +1,23 @@
-# Proteger config.php de acceso directo
+# ── CORS — Apache level (antes de que llegue al PHP) ──────
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Accept"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
+# Responder OK al preflight OPTIONS sin pasar por PHP
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^ - [R=204,L]
+
+# ── Proteger config.php de acceso directo ─────────────────
 <Files "config.php">
     Order Allow,Deny
     Deny from all
 </Files>
 
-# Proteger db_init.php después de ejecutarlo (descomentar)
+# ── Proteger db_init.php después de ejecutarlo ─────────────
 # <Files "db_init.php">
 #     Order Allow,Deny
 #     Deny from all

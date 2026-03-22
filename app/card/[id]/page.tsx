@@ -5,11 +5,14 @@ import QRDisplay from '@/components/QRDisplay'
 
 export const dynamic = 'force-dynamic'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://web.lweb.ch/vcar/api/cards.php'
+// Server component → llama al proxy interno (mismo dominio, sin CORS)
+const INTERNAL_API = process.env.NEXT_PUBLIC_BASE_URL
+  ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/cards`
+  : 'http://localhost:3000/api/cards'
 
 async function getCard(id: string): Promise<CardData | null> {
   try {
-    const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { cache: 'no-store' })
+    const res = await fetch(`${INTERNAL_API}?id=${encodeURIComponent(id)}`, { cache: 'no-store' })
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -118,7 +121,7 @@ export default async function CardPage({ params }: { params: { id: string } }) {
 
               {/* Save contact button */}
               <a
-                href={`${API_URL}?id=${card.id}&action=vcf`}
+                href={`/api/cards?id=${card.id}&action=vcf`}
                 download
                 style={{
                   marginTop: 28,
