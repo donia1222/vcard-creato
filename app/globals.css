@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== LWEB DESIGN SYSTEM ===== */
+:root {
+  --begonia400: #fe6c75;
+  --begonia500: #e1545d;
+  --begonia600: #f06069;
+  --gunpowder50:  #f4f7fb;
+  --gunpowder100: #dfeefb;
+  --gunpowder150: #c8d5e3;
+  --gunpowder200: #a8b8cc;
+  --gunpowder300: #8a9bb3;
+  --gunpowder400: #6b7d99;
+  --gunpowder600: #3f4960;
+  --gunpowder700: #424e65;
+  --gunpowder800: #2a3347;
+  --gunpowder900: #0f1d2c;
+  --cerulean400:  #15a0da;
+  --cerulean50:   #e0f1fa;
+  --radius-L: 40px;
+  --radius-M: 20px;
+  --radius-S: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-jakarta, 'Plus Jakarta Sans'), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--gunpowder900);
+  background: #fff;
+  min-height: 100vh;
+}
+
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* Input */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"] {
+  font-family: inherit;
+}
+input:focus {
+  outline: none;
+  border-color: var(--begonia400) !important;
+  box-shadow: 0 0 0 3px rgba(254,108,117,0.15);
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  background: var(--begonia400);
+  color: #fff;
+  border: none;
+  border-radius: 1000px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 20px rgba(254,108,117,0.30);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn-primary:hover {
+  background: var(--begonia500);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(254,108,117,0.40);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  background: #fff;
+  color: var(--gunpowder700);
+  border: 2px solid var(--gunpowder150);
+  border-radius: 1000px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 200ms ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  border-color: var(--gunpowder300);
+  color: var(--gunpowder900);
+  background: var(--gunpowder50);
+}
