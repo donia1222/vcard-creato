@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PHP_API = process.env.PHP_API_URL || 'https://web.lweb.ch/vcard/api/cards.php'
+const PHP_API = 'https://web.lweb.ch/vcard/api/cards.php'
 
 export async function POST(req: NextRequest) {
+  let text = ''
   try {
     const body = await req.json()
 
@@ -12,29 +13,25 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     })
 
-    // Leer como texto primero para poder debuggear si no es JSON válido
-    const text = await res.text()
-    console.log('[proxy POST] status:', res.status, 'body:', text.slice(0, 300))
+    text = await res.text()
 
-    let data
-    try {
-      data = JSON.parse(text)
-    } catch {
-      return NextResponse.json(
-        { error: 'PHP response is not JSON', raw: text.slice(0, 500) },
-        { status: 500 }
-      )
-    }
-
+    // Strip possible BOM or whitespace before JSON
+    const clean = text.trim().replace(/^\uFEFF/, '')
+    const data = JSON.parse(clean)
     return NextResponse.json(data, { status: res.status })
+
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[proxy POST] fetch failed:', msg)
-    return NextResponse.json({ error: msg }, { status: 500 })
+    // Return the raw PHP response so we can see what went wrong
+    return NextResponse.json(
+      { error: msg, php_url: PHP_API, raw: text.slice(0, 1000) },
+      { status: 500 }
+    )
   }
 }
 
 export async function GET(req: NextRequest) {
+  let text = ''
   try {
     const id = req.nextUrl.searchParams.get('id')
     const action = req.nextUrl.searchParams.get('action')
@@ -54,23 +51,16 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const text = await res.text()
-    console.log('[proxy GET] status:', res.status, 'body:', text.slice(0, 300))
-
-    let data
-    try {
-      data = JSON.parse(text)
-    } catch {
-      return NextResponse.json(
-        { error: 'PHP response is not JSON', raw: text.slice(0, 500) },
-        { status: 500 }
-      )
-    }
-
+    text = await res.text()
+    const clean = text.trim().replace(/^\uFEFF/, '')
+    const data = JSON.parse(clean)
     return NextResponse.json(data, { status: res.status })
+
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[proxy GET] fetch failed:', msg)
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json(
+      { error: msg, php_url: PHP_API, raw: text.slice(0, 1000) },
+      { status: 500 }
+    )
   }
 }
