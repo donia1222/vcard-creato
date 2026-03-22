@@ -1,0 +1,11 @@
+# Proteger config.php de acceso directo
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Proteger db_init.php después de ejecutarlo (descomentar)
+# <Files "db_init.php">
+#     Order Allow,Deny
+#     Deny from all
+# </Files>

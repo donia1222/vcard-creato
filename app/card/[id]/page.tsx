@@ -1,17 +1,17 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import redis from '@/lib/redis'
 import type { CardData } from '@/types/card'
 import QRDisplay from '@/components/QRDisplay'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://web.lweb.ch/vcar/api/cards.php'
 
 async function getCard(id: string): Promise<CardData | null> {
   try {
-    const data = await redis.get(`card:${id}`)
-    if (!data) return null
-    return JSON.parse(data)
+    const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { cache: 'no-store' })
+    if (!res.ok) return null
+    return await res.json()
   } catch {
     return null
   }
@@ -118,7 +118,7 @@ export default async function CardPage({ params }: { params: { id: string } }) {
 
               {/* Save contact button */}
               <a
-                href={`/api/card/${card.id}/vcf`}
+                href={`${API_URL}?id=${card.id}&action=vcf`}
                 download
                 style={{
                   marginTop: 28,

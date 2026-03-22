@@ -44,7 +44,8 @@ export default function HomePage() {
     if (!form.name.trim()) { setError('El nombre es obligatorio'); return }
     setLoading(true)
     try {
-      const res = await fetch('/api/cards', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/cards'
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -275,7 +276,7 @@ export default function HomePage() {
 
             {/* Actions */}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <a href={`/api/card/${result.id}/vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 180, justifyContent: 'center' }}>
+              <a href={`${process.env.NEXT_PUBLIC_API_URL || '/api/cards'}?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 180, justifyContent: 'center' }}>
                 ⬇ Descargar Contacto (.vcf)
               </a>
               <a href={result.url} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ flex: 1, minWidth: 140, justifyContent: 'center' }}>
