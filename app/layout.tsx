@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
 import { I18nProvider } from '@/components/I18nProvider'
 import './globals.css'
 
@@ -120,6 +121,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <I18nProvider>{children}</I18nProvider>
+        <Analytics />
         {adsenseClient && adsenseClient !== 'ca-pub-XXXXXXXXXXXXXXXX' && (
           <Script
             async
