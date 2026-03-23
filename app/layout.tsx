@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     description: 'Kostenlose digitale Visitenkarte mit QR-Code. Kein Account nötig.',
     type: 'website',
   },
+  other: {
+    'google-adsense-account': 'ca-pub-7632189809073629',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
