@@ -63,19 +63,13 @@ export default function HomePage() {
   const [showImpressum, setShowImpressum] = useState(false)
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [showCookies, setShowCookies] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const { tr } = useI18n()
 
   useEffect(() => {
     setHistory(loadHistory())
-    if (!localStorage.getItem('cookie_consent')) setShowCookies(true)
   }, [])
 
-  const acceptCookies = () => {
-    localStorage.setItem('cookie_consent', '1')
-    setShowCookies(false)
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
@@ -747,31 +741,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ── COOKIE BANNER ── */}
-      {showCookies && (
-        <div style={{
-          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 300, width: 'calc(100% - 40px)', maxWidth: 540,
-          background: '#0f1d2c', borderRadius: 16,
-          padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14,
-          boxShadow: '0 8px 32px rgba(15,29,44,0.25)',
-        }}>
-          <p style={{ flex: 1, fontSize: 13, color: '#c8d5e3', lineHeight: 1.5, margin: 0 }}>
-            {tr('cookie.text')}{' '}
-            <button onClick={() => setShowPrivacy(true)}
-              style={{ background: 'none', border: 'none', color: '#fe6c75', fontSize: 13, cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontWeight: 600 }}>
-              {tr('cookie.learn')}
-            </button>
-          </p>
-          <button onClick={acceptCookies} style={{
-            flexShrink: 0, background: '#fe6c75', color: '#fff',
-            border: 'none', borderRadius: 1000, padding: '8px 18px',
-            fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-          }}>
-            {tr('cookie.accept')}
-          </button>
-        </div>
-      )}
 
       {/* Responsive styles */}
       <style>{`
