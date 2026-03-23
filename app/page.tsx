@@ -374,22 +374,80 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {/* Actions — row 1 */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
               <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 180, justifyContent: 'center' }}>
                 {tr('result.download')}
               </a>
-              <a href={result.url} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ flex: 1, minWidth: 140, justifyContent: 'center' }}>
-                {tr('result.open')}
+              <a href={result.url} target="_blank" rel="noopener noreferrer"
+                style={{
+                  flex: 1, minWidth: 140, height: 52,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  background: '#e8faf2', border: '1.5px solid #86efac',
+                  color: '#16a34a', borderRadius: 1000,
+                  fontWeight: 700, fontSize: 15, textDecoration: 'none',
+                  fontFamily: 'inherit', transition: 'all 200ms',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#d1fae5' }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#e8faf2' }}>
+                🔗 {tr('result.open')}
               </a>
-              <button onClick={() => { setResult(null); setForm(EMPTY) }} className="btn-secondary"
-                style={{ flex: 1, minWidth: 140 }}>
-                {tr('result.new')}
-              </button>
             </div>
+
+            {/* Actions — row 2: nueva tarjeta */}
+            <button onClick={() => { setResult(null); setForm(EMPTY) }}
+              style={{
+                width: '100%', height: 46,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                background: '#eef4ff', border: '1.5px solid #bfdbfe',
+                color: '#3b82f6', borderRadius: 1000,
+                fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'all 200ms',
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.background = '#dbeafe' }}
+              onMouseOut={(e) => { e.currentTarget.style.background = '#eef4ff' }}>
+              + {tr('result.new')}
+            </button>
           </div>
         )}
       </section>
+
+      {/* ── LWEB PROMO BANNER ── */}
+      <div style={{ background: '#f4f7fb', borderTop: '1px solid #dfeefb', padding: '20px 24px' }}>
+        <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            maxWidth: 680, margin: '0 auto',
+            background: '#fff', borderRadius: 16,
+            border: '1.5px solid #dfeefb', padding: '16px 22px',
+            textDecoration: 'none', gap: 16,
+            boxShadow: '0 4px 16px rgba(15,29,44,0.06)',
+            transition: 'box-shadow 200ms, border-color 200ms',
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.borderColor = '#fe6c75'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(254,108,117,0.15)' }}
+          onMouseOut={(e) => { e.currentTarget.style.borderColor = '#dfeefb'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,29,44,0.06)' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logolweb.png" alt="Lweb" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontWeight: 800, fontSize: 14, color: '#0f1d2c', letterSpacing: '-0.01em', marginBottom: 1 }}>
+                Lweb.ch — App & Web Entwicklung
+              </p>
+              <p style={{ fontSize: 12, color: '#6b7d99', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Native iOS & Android Apps · Moderne Websites · KI-Lösungen · Buchs SG
+              </p>
+            </div>
+          </div>
+          <span style={{
+            flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fe6c75',
+            background: '#fff5f5', border: '1.5px solid #fecdd3',
+            borderRadius: 1000, padding: '5px 13px', whiteSpace: 'nowrap',
+          }}>
+            lweb.ch →
+          </span>
+        </a>
+      </div>
 
       {/* ── FOOTER ── */}
       <footer style={{ borderTop: '1px solid #dfeefb', background: '#f4f7fb', padding: '20px 24px 24px', textAlign: 'center' }}>

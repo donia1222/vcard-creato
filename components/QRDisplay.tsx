@@ -48,20 +48,20 @@ export default function QRDisplay({ url, size = 200, showDownload = false, filen
         <button
           onClick={downloadQR}
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '7px 16px', borderRadius: 1000,
-            border: '1.5px solid #c8d5e3', background: '#fff',
-            color: '#424e65', fontSize: 13, fontWeight: 600,
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            padding: '10px 20px', borderRadius: 1000,
+            border: '1.5px solid #bfdbfe', background: '#eef4ff',
+            color: '#3b82f6', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
-            transition: 'all 200ms',
+            transition: 'all 200ms', width: '100%', justifyContent: 'center',
           }}
-          onMouseOver={(e) => { e.currentTarget.style.borderColor = '#fe6c75'; e.currentTarget.style.color = '#fe6c75' }}
-          onMouseOut={(e) => { e.currentTarget.style.borderColor = '#c8d5e3'; e.currentTarget.style.color = '#424e65' }}
+          onMouseOver={(e) => { e.currentTarget.style.background = '#dbeafe' }}
+          onMouseOut={(e) => { e.currentTarget.style.background = '#eef4ff' }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            {label[lang] ?? label.en}
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {label[lang] ?? label.en}
         </button>
       )}
     </div>
