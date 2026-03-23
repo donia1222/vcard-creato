@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import { I18nProvider } from '@/components/I18nProvider'
 import './globals.css'
 
 const jakarta = Plus_Jakarta_Sans({
@@ -21,8 +22,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={jakarta.variable}>
-      <body className="antialiased">{children}</body>
+    <html lang="de" className={jakarta.variable}>
+      <body className="antialiased">
+        <I18nProvider>{children}</I18nProvider>
+      </body>
     </html>
   )
 }

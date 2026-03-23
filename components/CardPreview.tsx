@@ -3,9 +3,11 @@ import type { CardData } from '@/types/card'
 interface CardPreviewProps {
   card: Partial<CardData>
   size?: 'sm' | 'md'
+  namePlaceholder?: string
+  emptyPlaceholder?: string
 }
 
-export default function CardPreview({ card, size = 'md' }: CardPreviewProps) {
+export default function CardPreview({ card, size = 'md', namePlaceholder = 'Your Name', emptyPlaceholder = 'Fill in the form' }: CardPreviewProps) {
   const initials = card.name
     ? card.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?'
@@ -55,7 +57,7 @@ export default function CardPreview({ card, size = 'md' }: CardPreviewProps) {
             className="font-extrabold text-gun-900 tracking-tight leading-tight truncate"
             style={{ fontSize: isSmall ? 18 : 22, letterSpacing: '-0.02em' }}
           >
-            {card.name || 'Tu Nombre'}
+            {card.name || namePlaceholder}
           </h2>
           {card.title && (
             <p className="text-begonia-400 text-sm font-semibold mt-0.5 truncate">
@@ -86,7 +88,7 @@ export default function CardPreview({ card, size = 'md' }: CardPreviewProps) {
           )}
           {!card.email && !card.phone && !card.website && !card.address && (
             <p className="text-gun-200 text-sm text-center">
-              Rellena el formulario para ver los datos
+              {emptyPlaceholder}
             </p>
           )}
         </div>
