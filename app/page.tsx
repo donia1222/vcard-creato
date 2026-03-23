@@ -106,11 +106,26 @@ export default function HomePage() {
     }
   }
 
+  const shareUrl = result
+    ? result.url + (form.design && form.design !== 'classic' ? `?design=${form.design}` : '')
+    : ''
+
   const handleCopy = () => {
     if (!result) return
-    navigator.clipboard.writeText(result.url)
+    navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
+  }
+
+  const handleNativeShare = async () => {
+    if (!result) return
+    if (navigator.share) {
+      await navigator.share({ url: shareUrl })
+    } else {
+      navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    }
   }
 
   const handleCopyHistoryUrl = (url: string, id: string) => {
@@ -486,7 +501,7 @@ export default function HomePage() {
                   boxShadow: '0 4px 20px rgba(15,29,44,0.06)',
                   display: 'inline-block',
                 }}>
-                  <QRDisplay url={result.url} size={180} showDownload filename={result.card.name.replace(/\s+/g, '_')} />
+                  <QRDisplay url={shareUrl} size={180} showDownload filename={result.card.name.replace(/\s+/g, '_')} />
                 </div>
                 <p style={{ fontSize: 12, color: '#a8b8cc', marginTop: 8 }}>{tr('result.qr.hint')}</p>
               </div>
@@ -499,7 +514,7 @@ export default function HomePage() {
             }}>
               <p style={{ fontSize: 13, color: '#6b7d99', fontWeight: 600, marginBottom: 10 }}>{tr('result.url.label')}</p>
               <div style={{ display: 'flex', gap: 8 }}>
-                <input readOnly value={result.url}
+                <input readOnly value={shareUrl}
                   style={{ flex: 1, background: '#fff', border: '1.5px solid #dfeefb', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#424e65', fontFamily: 'inherit', minWidth: 0 }} />
                 <button onClick={handleCopy}
                   style={{
@@ -512,54 +527,21 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* ── Share buttons ── */}
+            {/* ── Share button ── */}
             <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 12, color: '#6b7d99', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
+              <button onClick={handleNativeShare}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  height: 44, padding: '0 22px', borderRadius: 1000,
+                  background: '#fe6c75', color: '#fff', border: 'none',
+                  fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                  fontFamily: 'inherit', transition: 'filter 200ms',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
+                onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                 {tr('share.label')}
-              </p>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                {/* WhatsApp */}
-                <a href={`https://wa.me/?text=${encodeURIComponent(result.url)}`} target="_blank" rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    height: 44, padding: '0 18px', borderRadius: 1000,
-                    background: '#22c55e', color: '#fff',
-                    fontWeight: 700, fontSize: 14, textDecoration: 'none',
-                    fontFamily: 'inherit', transition: 'filter 200ms',
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
-                  onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                  WhatsApp
-                </a>
-                {/* Telegram */}
-                <a href={`https://t.me/share/url?url=${encodeURIComponent(result.url)}`} target="_blank" rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    height: 44, padding: '0 18px', borderRadius: 1000,
-                    background: '#229ED9', color: '#fff',
-                    fontWeight: 700, fontSize: 14, textDecoration: 'none',
-                    fontFamily: 'inherit', transition: 'filter 200ms',
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
-                  onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                  Telegram
-                </a>
-                {/* Email */}
-                <a href={`mailto:?subject=${encodeURIComponent(tr('share.email.subject'))}&body=${encodeURIComponent(result.url)}`}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    height: 44, padding: '0 18px', borderRadius: 1000,
-                    background: '#f4f7fb', border: '1.5px solid #dfeefb',
-                    color: '#424e65', fontWeight: 700, fontSize: 14, textDecoration: 'none',
-                    fontFamily: 'inherit', transition: 'background 200ms',
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.background = '#e8f0fb' }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = '#f4f7fb' }}>
-                  ✉ {tr('share.email')}
-                </a>
-              </div>
+              </button>
             </div>
 
             {/* Actions — row 1 */}
@@ -567,7 +549,7 @@ export default function HomePage() {
               <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 180, justifyContent: 'center' }}>
                 {tr('result.download')}
               </a>
-              <a href={result.url} target="_blank" rel="noopener noreferrer"
+              <a href={shareUrl} target="_blank" rel="noopener noreferrer"
                 style={{
                   flex: 1, minWidth: 140, height: 52,
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
