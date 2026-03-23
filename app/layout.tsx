@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import Script from 'next/script'
 import { I18nProvider } from '@/components/I18nProvider'
 import './globals.css'
 
@@ -11,20 +12,30 @@ const jakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'VCard Creator — Tarjeta de Visita Digital',
-  description: 'Crea tu tarjeta de visita digital gratis. Genera un código QR y comparte tu contacto fácilmente.',
+  title: 'VCard Creator — Digitale Visitenkarte kostenlos erstellen',
+  description: 'Erstelle deine digitale Visitenkarte kostenlos in Sekunden. QR-Code inklusive, keine Registrierung nötig. Teile deine Kontaktdaten sofort als Link oder .vcf-Datei.',
+  keywords: ['digitale Visitenkarte', 'vCard erstellen', 'QR Code Visitenkarte', 'tarjeta de visita digital', 'digital business card'],
   openGraph: {
-    title: 'VCard Creator',
-    description: 'Crea tu tarjeta de visita digital en segundos',
+    title: 'VCard Creator — Digitale Visitenkarte kostenlos erstellen',
+    description: 'Kostenlose digitale Visitenkarte mit QR-Code. Kein Account nötig.',
     type: 'website',
   },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
   return (
     <html lang="de" className={jakarta.variable}>
       <body className="antialiased">
         <I18nProvider>{children}</I18nProvider>
+        {adsenseClient && adsenseClient !== 'ca-pub-XXXXXXXXXXXXXXXX' && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   )

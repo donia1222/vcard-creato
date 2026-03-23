@@ -219,6 +219,65 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ background: '#fff', padding: '48px 24px', borderTop: '1px solid #dfeefb' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.02em', textAlign: 'center', marginBottom: 36 }}>
+            {tr('how.title')}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="how-grid">
+            {([
+              { num: '1', title: tr('how.step1.title'), desc: tr('how.step1.desc'), icon: '✏️' },
+              { num: '2', title: tr('how.step2.title'), desc: tr('how.step2.desc'), icon: '⚡' },
+              { num: '3', title: tr('how.step3.title'), desc: tr('how.step3.desc'), icon: '🔗' },
+            ] as const).map((step) => (
+              <div key={step.num} style={{
+                background: '#f4f7fb', borderRadius: 20,
+                border: '1.5px solid #dfeefb',
+                padding: '24px 20px', textAlign: 'center',
+              }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #fe6c75, #f06069)',
+                  color: '#fff', fontWeight: 800, fontSize: 18,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 14px',
+                }}>
+                  {step.num}
+                </div>
+                <p style={{ fontWeight: 700, fontSize: 15, color: '#0f1d2c', marginBottom: 6 }}>{step.title}</p>
+                <p style={{ fontSize: 13, color: '#6b7d99', lineHeight: 1.6 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── AD SLOT TOP ── */}
+      {process.env.NODE_ENV === 'development' ? (
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 8px' }}>
+          <div style={{
+            background: '#f4f7fb', border: '2px dashed #c8d5e3',
+            borderRadius: 12, height: 90,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#a8b8cc', fontSize: 12, fontWeight: 600, gap: 8,
+          }}>
+            📢 Google Ad — 728×90 (solo visible en desarrollo)
+          </div>
+        </div>
+      ) : (process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 8px' }}>
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT}
+            data-ad-slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT || '0000000000'}
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
+        </div>
+      ))}
+
       {/* ── FORM / RESULT ── */}
       <section id="crear" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px' }}>
 
@@ -437,7 +496,7 @@ export default function HomePage() {
                 Lweb.ch — App & Web Entwicklung
               </p>
               <p style={{ fontSize: 12, color: '#6b7d99', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Native iOS & Android Apps · Moderne Websites · KI-Lösungen · Buchs SG
+                {tr('lweb.tagline')}
               </p>
             </div>
           </div>
@@ -698,10 +757,10 @@ export default function HomePage() {
           boxShadow: '0 8px 32px rgba(15,29,44,0.25)',
         }}>
           <p style={{ flex: 1, fontSize: 13, color: '#c8d5e3', lineHeight: 1.5, margin: 0 }}>
-            We use cookies to store your preferences and card history locally.{' '}
+            {tr('cookie.text')}{' '}
             <button onClick={() => setShowPrivacy(true)}
               style={{ background: 'none', border: 'none', color: '#fe6c75', fontSize: 13, cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontWeight: 600 }}>
-              Learn more
+              {tr('cookie.learn')}
             </button>
           </p>
           <button onClick={acceptCookies} style={{
@@ -709,7 +768,7 @@ export default function HomePage() {
             border: 'none', borderRadius: 1000, padding: '8px 18px',
             fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
           }}>
-            Got it
+            {tr('cookie.accept')}
           </button>
         </div>
       )}
@@ -719,6 +778,7 @@ export default function HomePage() {
         @media (max-width: 768px) {
           .form-grid { grid-template-columns: 1fr !important; }
           .result-grid { grid-template-columns: 1fr !important; }
+          .how-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
