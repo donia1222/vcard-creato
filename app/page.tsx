@@ -4,18 +4,18 @@ import { useState, useRef, useEffect } from 'react'
 import CardPreview from '@/components/CardPreview'
 import QRDisplay from '@/components/QRDisplay'
 import { useI18n, LangSwitcher } from '@/components/I18nProvider'
-import type { CardData } from '@/types/card'
+import type { CardData, CardDesign } from '@/types/card'
 
 interface FormState {
   name: string; company: string; title: string
   phone: string; email: string; website: string
-  address: string; photo: string
+  address: string; photo: string; design: CardDesign
 }
 
 const EMPTY: FormState = {
   name: '', company: '', title: '',
   phone: '', email: '', website: '',
-  address: '', photo: '',
+  address: '', photo: '', design: 'classic',
 }
 
 interface Result { id: string; url: string; card: CardData }
@@ -63,6 +63,7 @@ export default function HomePage() {
   const [showImpressum, setShowImpressum] = useState(false)
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [formTab, setFormTab] = useState<'data' | 'design'>('data')
   const fileRef = useRef<HTMLInputElement>(null)
   const { tr } = useI18n()
 
@@ -286,59 +287,136 @@ export default function HomePage() {
               padding: 32,
               boxShadow: '0 4px 24px rgba(15,29,44,0.06)',
             }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', marginBottom: 24, letterSpacing: '-0.01em' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', marginBottom: 20, letterSpacing: '-0.01em' }}>
                 {tr('form.title')}
               </h2>
 
+              {/* ── TABS ── */}
+              <div style={{ display: 'flex', gap: 4, background: '#f4f7fb', borderRadius: 14, padding: 4, marginBottom: 24 }}>
+                {(['data', 'design'] as const).map((tab) => (
+                  <button key={tab} type="button" onClick={() => setFormTab(tab)}
+                    style={{
+                      flex: 1, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
+                      fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
+                      background: formTab === tab ? '#fff' : 'transparent',
+                      color: formTab === tab ? '#0f1d2c' : '#6b7d99',
+                      boxShadow: formTab === tab ? '0 1px 6px rgba(15,29,44,0.10)' : 'none',
+                      transition: 'all 150ms',
+                    }}>
+                    {tab === 'data' ? `📝 ${tr('form.tab.data')}` : `🎨 ${tr('form.tab.design')}`}
+                  </button>
+                ))}
+              </div>
+
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                {/* Photo */}
-                <div>
-                  <label style={labelStyle}>{tr('form.photo')}</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8 }}>
-                    {form.photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={form.photo} alt="preview"
-                        style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fe6c75' }} />
-                    ) : (
-                      <div style={{
-                        width: 56, height: 56, borderRadius: '50%',
-                        background: '#f4f7fb', border: '2px dashed #c8d5e3',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 22, color: '#a8b8cc',
-                      }}>
-                        👤
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button type="button" onClick={() => fileRef.current?.click()}
-                        className="btn-secondary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}>
-                        {tr('form.photo.upload')}
-                      </button>
-                      {form.photo && (
-                        <button type="button" onClick={() => setForm((p) => ({ ...p, photo: '' }))}
-                          style={{ height: 36, fontSize: 13, padding: '0 14px', borderRadius: 1000, border: '1.5px solid #fecdd3', background: '#fff5f5', color: '#fe6c75', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                          {tr('form.photo.remove')}
-                        </button>
+
+                {/* ── DATA TAB ── */}
+                {formTab === 'data' && (<>
+                  {/* Photo */}
+                  <div>
+                    <label style={labelStyle}>{tr('form.photo')}</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8 }}>
+                      {form.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={form.photo} alt="preview"
+                          style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fe6c75' }} />
+                      ) : (
+                        <div style={{
+                          width: 56, height: 56, borderRadius: '50%',
+                          background: '#f4f7fb', border: '2px dashed #c8d5e3',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 22, color: '#a8b8cc',
+                        }}>
+                          👤
+                        </div>
                       )}
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button type="button" onClick={() => fileRef.current?.click()}
+                          className="btn-secondary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}>
+                          {tr('form.photo.upload')}
+                        </button>
+                        {form.photo && (
+                          <button type="button" onClick={() => setForm((p) => ({ ...p, photo: '' }))}
+                            style={{ height: 36, fontSize: 13, padding: '0 14px', borderRadius: 1000, border: '1.5px solid #fecdd3', background: '#fff5f5', color: '#fe6c75', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            {tr('form.photo.remove')}
+                          </button>
+                        )}
+                      </div>
+                      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
                     </div>
-                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
                   </div>
-                </div>
 
-                <Field label={tr('form.name')} name="name" value={form.name} onChange={handleChange} placeholder={tr('form.name.ph')} />
+                  <Field label={tr('form.name')} name="name" value={form.name} onChange={handleChange} placeholder={tr('form.name.ph')} />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <Field label={tr('form.company')} name="company" value={form.company} onChange={handleChange} placeholder={tr('form.company.ph')} />
-                  <Field label={tr('form.title_f')} name="title" value={form.title} onChange={handleChange} placeholder={tr('form.title_f.ph')} />
-                </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <Field label={tr('form.company')} name="company" value={form.company} onChange={handleChange} placeholder={tr('form.company.ph')} />
+                    <Field label={tr('form.title_f')} name="title" value={form.title} onChange={handleChange} placeholder={tr('form.title_f.ph')} />
+                  </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <Field label={tr('form.phone')} name="phone" value={form.phone} onChange={handleChange} placeholder={tr('form.phone.ph')} type="tel" />
-                  <Field label={tr('form.email')} name="email" value={form.email} onChange={handleChange} placeholder={tr('form.email.ph')} type="email" />
-                </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <Field label={tr('form.phone')} name="phone" value={form.phone} onChange={handleChange} placeholder={tr('form.phone.ph')} type="tel" />
+                    <Field label={tr('form.email')} name="email" value={form.email} onChange={handleChange} placeholder={tr('form.email.ph')} type="email" />
+                  </div>
 
-                <Field label={tr('form.website')} name="website" value={form.website} onChange={handleChange} placeholder={tr('form.website.ph')} type="url" />
-                <Field label={tr('form.address')} name="address" value={form.address} onChange={handleChange} placeholder={tr('form.address.ph')} />
+                  <Field label={tr('form.website')} name="website" value={form.website} onChange={handleChange} placeholder={tr('form.website.ph')} type="url" />
+                  <Field label={tr('form.address')} name="address" value={form.address} onChange={handleChange} placeholder={tr('form.address.ph')} />
+                </>)}
+
+                {/* ── DESIGN TAB ── */}
+                {formTab === 'design' && (
+                  <div>
+                    <p style={{ fontSize: 13, color: '#6b7d99', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {tr('design.choose')}
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                      {(['classic', 'dark', 'ocean', 'rose'] as const).map((d) => {
+                        const selected = (form.design || 'classic') === d
+                        return (
+                          <button key={d} type="button"
+                            onClick={() => setForm((p) => ({ ...p, design: d }))}
+                            style={{
+                              border: `2px solid ${selected ? '#fe6c75' : '#dfeefb'}`,
+                              borderRadius: 16, padding: 10, cursor: 'pointer',
+                              background: selected ? '#fff5f5' : '#fff',
+                              position: 'relative', transition: 'all 200ms',
+                              textAlign: 'left',
+                            }}>
+                            {selected && (
+                              <div style={{
+                                position: 'absolute', top: 8, right: 8, zIndex: 1,
+                                width: 22, height: 22, borderRadius: '50%',
+                                background: '#fe6c75', color: '#fff',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 11, fontWeight: 800,
+                              }}>✓</div>
+                            )}
+                            <div style={{ pointerEvents: 'none', marginBottom: 8 }}>
+                              <CardPreview
+                                card={{ ...form, design: d }}
+                                size="sm"
+                                namePlaceholder={form.name || tr('preview.name')}
+                                emptyPlaceholder=""
+                              />
+                            </div>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: selected ? '#fe6c75' : '#6b7d99', textAlign: 'center', textTransform: 'capitalize' }}>
+                              {tr(`design.${d}`)}
+                            </p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <button type="button" onClick={() => setFormTab('data')}
+                      style={{
+                        width: '100%', height: 44, marginTop: 18,
+                        background: '#f4f7fb', border: '1.5px solid #dfeefb',
+                        borderRadius: 1000, fontWeight: 700, fontSize: 14,
+                        color: '#424e65', cursor: 'pointer', fontFamily: 'inherit',
+                        transition: 'all 200ms',
+                      }}>
+                      ← {tr('form.tab.data')}
+                    </button>
+                  </div>
+                )}
 
                 {error && (
                   <div style={{ background: '#fff5f5', border: '1.5px solid #fecdd3', borderRadius: 12, padding: '10px 16px', color: '#e1545d', fontSize: 14, fontWeight: 500 }}>
@@ -359,6 +437,13 @@ export default function HomePage() {
                 {tr('preview.label')}
               </p>
               <CardPreview card={form} namePlaceholder={tr('preview.name')} emptyPlaceholder={tr('preview.empty')} />
+              {form.design && form.design !== 'classic' && (
+                <div style={{ marginTop: 8, textAlign: 'center' }}>
+                  <span style={{ fontSize: 11, color: '#fe6c75', fontWeight: 700, background: '#fff5f5', border: '1px solid #fecdd3', borderRadius: 100, padding: '3px 10px' }}>
+                    🎨 {tr(`design.${form.design}`)}
+                  </span>
+                </div>
+              )}
               <p style={{ fontSize: 12, color: '#a8b8cc', marginTop: 10, textAlign: 'center' }}>
                 {tr('preview.hint')}
               </p>
@@ -387,7 +472,7 @@ export default function HomePage() {
               {/* Card preview */}
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7d99', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{tr('result.card.label')}</p>
-                <CardPreview card={result.card} />
+                <CardPreview card={{ ...result.card, design: form.design }} />
               </div>
 
               {/* QR */}
@@ -424,6 +509,56 @@ export default function HomePage() {
                   }}>
                   {copied ? tr('result.copied') : tr('result.copy')}
                 </button>
+              </div>
+            </div>
+
+            {/* ── Share buttons ── */}
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 12, color: '#6b7d99', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
+                {tr('share.label')}
+              </p>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {/* WhatsApp */}
+                <a href={`https://wa.me/?text=${encodeURIComponent(result.url)}`} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    height: 44, padding: '0 18px', borderRadius: 1000,
+                    background: '#22c55e', color: '#fff',
+                    fontWeight: 700, fontSize: 14, textDecoration: 'none',
+                    fontFamily: 'inherit', transition: 'filter 200ms',
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
+                  onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  WhatsApp
+                </a>
+                {/* Telegram */}
+                <a href={`https://t.me/share/url?url=${encodeURIComponent(result.url)}`} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    height: 44, padding: '0 18px', borderRadius: 1000,
+                    background: '#229ED9', color: '#fff',
+                    fontWeight: 700, fontSize: 14, textDecoration: 'none',
+                    fontFamily: 'inherit', transition: 'filter 200ms',
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
+                  onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                  Telegram
+                </a>
+                {/* Email */}
+                <a href={`mailto:?subject=${encodeURIComponent(tr('share.email.subject'))}&body=${encodeURIComponent(result.url)}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    height: 44, padding: '0 18px', borderRadius: 1000,
+                    background: '#f4f7fb', border: '1.5px solid #dfeefb',
+                    color: '#424e65', fontWeight: 700, fontSize: 14, textDecoration: 'none',
+                    fontFamily: 'inherit', transition: 'background 200ms',
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = '#e8f0fb' }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#f4f7fb' }}>
+                  ✉ {tr('share.email')}
+                </a>
               </div>
             </div>
 

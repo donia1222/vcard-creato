@@ -1,3 +1,5 @@
+export type CardDesign = 'classic' | 'dark' | 'ocean' | 'rose'
+
 export interface CardData {
   id: string
   name: string
@@ -8,5 +10,6 @@ export interface CardData {
   website?: string
   address?: string
   photo?: string  // base64 data URL
+  design?: CardDesign
   createdAt: string
 }
