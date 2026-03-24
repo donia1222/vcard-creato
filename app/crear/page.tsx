@@ -205,23 +205,6 @@ export default function CrearPage() {
         </div>
       </header>
 
-      {/* ── PAGE TITLE ── */}
-      {!result && <div style={{ background: 'linear-gradient(180deg, #f4f7fb 0%, #fff 100%)', padding: '32px 24px 24px', textAlign: 'center', borderBottom: '1px solid #dfeefb' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: '#fff5f5', border: '1.5px solid #fecdd3',
-          color: '#fe6c75', fontSize: 13, fontWeight: 600,
-          padding: '6px 16px', borderRadius: 1000, marginBottom: 12,
-        }}>
-          ✦ {tr('hero.badge')}
-        </div>
-        <h1 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8 }}>
-          {tr('hero.title')} <span style={{ color: '#fe6c75' }}>{tr('hero.title.accent')}</span>
-        </h1>
-        <p style={{ fontSize: 16, color: '#6b7d99', lineHeight: 1.6, maxWidth: 520, margin: '0 auto' }}>
-          {tr('hero.subtitle')}
-        </p>
-      </div>}
 
       {/* ── AD SLOT TOP ── */}
       {process.env.NODE_ENV === 'development' ? (
