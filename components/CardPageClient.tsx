@@ -1,14 +1,21 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useI18n, LangSwitcher } from '@/components/I18nProvider'
 import QRDisplay from '@/components/QRDisplay'
 import type { CardData } from '@/types/card'
 
 export default function CardPageClient({ card, cardUrl }: { card: CardData; cardUrl: string }) {
   const { tr } = useI18n()
+  const [showModal, setShowModal] = useState(false)
 
   const initials = card.name
     .split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowModal(true), 3500)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f7fb', display: 'flex', flexDirection: 'column' }}>
@@ -93,17 +100,91 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
             </div>
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#a8b8cc' }}>
-            {tr('card.create')}{' '}
-            <a href="/" style={{ color: '#fe6c75', fontWeight: 600 }}>VCard Creator</a>
-          </p>
-
-          {/* Lang switcher */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
-            <LangSwitcher />
-          </div>
+          {/* Trigger modal button */}
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', marginTop: 20, height: 48,
+              background: '#fff5f5', border: '1.5px solid #fecdd3',
+              borderRadius: 1000, color: '#fe6c75', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 200ms',
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = '#fff5f5' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {tr('card.create')} VCard Creator
+          </button>
         </div>
       </main>
+
+      {/* ── MODAL: Create own card ── */}
+      {showModal && (
+        <div
+          onClick={() => setShowModal(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500,
+            background: 'rgba(15,29,44,0.55)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            padding: '0 0 0 0',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff', borderRadius: '28px 28px 0 0',
+              width: '100%', maxWidth: 480,
+              boxShadow: '0 -20px 60px rgba(15,29,44,0.20)',
+              border: '1.5px solid #dfeefb',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Top accent */}
+            <div style={{ height: 4, background: 'linear-gradient(90deg, #fe6c75, #f06069)' }} />
+
+            <div style={{ padding: '28px 28px 32px' }}>
+              {/* Drag handle */}
+              <div style={{ width: 40, height: 4, background: '#dfeefb', borderRadius: 100, margin: '0 auto 24px' }} />
+
+              {/* Logo */}
+              <p style={{ fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em', textAlign: 'center', marginBottom: 8 }}>
+                VCard <span style={{ color: '#fe6c75' }}>Creator</span>
+              </p>
+
+              {/* Title */}
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0f1d2c', textAlign: 'center', marginBottom: 6, lineHeight: 1.3 }}>
+                {tr('card.modal.title')}
+              </h2>
+              <p style={{ fontSize: 14, color: '#6b7d99', textAlign: 'center', marginBottom: 28 }}>
+                {tr('card.modal.sub')}
+              </p>
+
+              {/* Features */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 28, flexWrap: 'wrap' }}>
+                {['🔗 URL permanente', '◼ QR incluido', '👤 .vcf contacto'].map((f, i) => (
+                  <span key={i} style={{ fontSize: 13, color: '#424e65', fontWeight: 600 }}>{f}</span>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <a href="/" className="btn-primary" style={{ width: '100%', height: 56, fontSize: 16, justifyContent: 'center', borderRadius: 1000, marginBottom: 16 }}>
+                {tr('card.modal.cta')}
+              </a>
+
+              {/* Lang switcher + close */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <LangSwitcher />
+                <button
+                  onClick={() => setShowModal(false)}
+                  style={{ fontSize: 13, color: '#a8b8cc', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {tr('card.modal.close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

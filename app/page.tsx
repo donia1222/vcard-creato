@@ -1,911 +1,661 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import CardPreview from '@/components/CardPreview'
-import QRDisplay from '@/components/QRDisplay'
+import { useState } from 'react'
 import { useI18n, LangSwitcher } from '@/components/I18nProvider'
-import type { CardData, CardDesign } from '@/types/card'
 
-interface FormState {
-  name: string; company: string; title: string
-  phone: string; email: string; website: string
-  address: string; photo: string; design: CardDesign
+const CORAL = '#fe6c75'
+const DARK  = '#0f1d2c'
+const GRAY  = '#6b7d99'
+const LIGHT = '#f4f7fb'
+const BORDER= '#dfeefb'
+
+/* ── REVIEWS per language ── */
+const REVIEWS: Record<string, { name: string; location: string; text: string }[]> = {
+  de: [
+    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Ich habe meine Karte in weniger als einer Minute erstellt. Der QR-Code funktionierte beim Event perfekt und die Leute konnten meinen Kontakt sofort speichern.' },
+    { name: 'Anna S.', location: 'Zürich, CH', text: 'Ohne Registrierung eine professionelle digitale Visitenkarte erstellt. Einfach, schnell und der QR-Code funktioniert einwandfrei.' },
+    { name: 'Sophie L.', location: 'Paris, FR', text: 'Sehr praktisch! Ich habe meine Karte per QR auf einer Messe geteilt und alle konnten sie direkt speichern.' },
+    { name: 'Marco R.', location: 'Milano, IT', text: 'In 30 Sekunden erstellt. Der permanente Link funktioniert perfekt und ich kann ihn auf LinkedIn teilen.' },
+    { name: 'Laura K.', location: 'Berlin, DE', text: 'Einfach genial. Kein Registrieren, kein Installieren. QR-Code drucken, fertig. Meine Kunden sind begeistert.' },
+    { name: 'James T.', location: 'London, UK', text: 'Die permanente URL ist großartig. Ich habe den QR auf meine Verpackung gedruckt und Kunden können meinen Kontakt sofort speichern.' },
+  ],
+  en: [
+    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Created my card in less than a minute. The QR worked perfectly at the event and people could save my contact instantly.' },
+    { name: 'Anna S.', location: 'Zürich, CH', text: 'Created a professional digital business card without registering. Simple, fast and the QR code works perfectly.' },
+    { name: 'Sophie L.', location: 'Paris, FR', text: 'Super handy! I shared my card via QR at a trade show and everyone could save it directly.' },
+    { name: 'Marco R.', location: 'Milano, IT', text: 'Created in 30 seconds. The permanent link works perfectly and I can share it on LinkedIn.' },
+    { name: 'Laura K.', location: 'Berlin, DE', text: 'Simply brilliant. No registering, no installing. Print the QR code, done. My clients love it.' },
+    { name: 'James T.', location: 'London, UK', text: 'The permanent URL is brilliant. I printed the QR on my packaging and clients can save my contact instantly. No app needed.' },
+  ],
+  es: [
+    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Creé mi tarjeta en menos de un minuto. El QR funcionó perfecto en el evento y la gente pudo guardar mi contacto al instante.' },
+    { name: 'Anna S.', location: 'Zürich, CH', text: 'Creé una tarjeta de visita digital profesional sin registrarme. Sencillo, rápido y el código QR funciona perfectamente.' },
+    { name: 'Sophie L.', location: 'Paris, FR', text: 'Muy práctico. Compartí mi tarjeta con QR en un salón profesional y todos pudieron guardarla directamente.' },
+    { name: 'Marco R.', location: 'Milano, IT', text: 'Creada en 30 segundos. El enlace permanente funciona perfecto y puedo compartirlo en LinkedIn.' },
+    { name: 'Laura K.', location: 'Berlin, DE', text: 'Sencillamente genial. Sin registro, sin instalación. Imprimo el QR y listo. Mis clientes están encantados.' },
+    { name: 'James T.', location: 'London, UK', text: 'La URL permanente es brillante. Imprimí el QR en mi packaging y los clientes guardan mi contacto al instante.' },
+  ],
+  fr: [
+    { name: 'Carlos M.', location: 'Madrid, ES', text: 'J\'ai créé ma carte en moins d\'une minute. Le QR a parfaitement fonctionné à l\'événement et les gens ont pu enregistrer mon contact instantanément.' },
+    { name: 'Anna S.', location: 'Zürich, CH', text: 'Carte de visite numérique professionnelle créée sans inscription. Simple, rapide et le QR code fonctionne parfaitement.' },
+    { name: 'Sophie L.', location: 'Paris, FR', text: 'Super pratique ! J\'ai partagé ma carte via QR lors d\'un salon et tout le monde a pu l\'enregistrer directement.' },
+    { name: 'Marco R.', location: 'Milano, IT', text: 'Créé en 30 secondes. Le lien permanent fonctionne parfaitement et je peux le partager sur LinkedIn.' },
+    { name: 'Laura K.', location: 'Berlin, DE', text: 'Tout simplement génial. Pas d\'inscription, pas d\'installation. Imprimer le QR, c\'est fait. Mes clients adorent.' },
+    { name: 'James T.', location: 'London, UK', text: 'L\'URL permanente est brillante. J\'ai imprimé le QR sur mon emballage et les clients peuvent enregistrer mon contact instantanément.' },
+  ],
+  it: [
+    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Ho creato il mio biglietto in meno di un minuto. Il QR ha funzionato perfettamente all\'evento e le persone hanno potuto salvare il mio contatto all\'istante.' },
+    { name: 'Anna S.', location: 'Zürich, CH', text: 'Ho creato un biglietto da visita digitale professionale senza registrarmi. Semplice, veloce e il QR funziona perfettamente.' },
+    { name: 'Sophie L.', location: 'Paris, FR', text: 'Molto pratico! Ho condiviso il mio biglietto via QR a una fiera e tutti hanno potuto salvarlo direttamente.' },
+    { name: 'Marco R.', location: 'Milano, IT', text: 'Creato in 30 secondi. Il link permanente funziona perfettamente e posso condividerlo su LinkedIn.' },
+    { name: 'Laura K.', location: 'Berlin, DE', text: 'Semplicemente geniale. Nessuna registrazione, nessuna installazione. Stampa il QR, fatto. I miei clienti sono entusiasti.' },
+    { name: 'James T.', location: 'London, UK', text: 'L\'URL permanente è fantastico. Ho stampato il QR sulla mia confezione e i clienti possono salvare il mio contatto all\'istante.' },
+  ],
 }
 
-const EMPTY: FormState = {
-  name: '', company: '', title: '',
-  phone: '', email: '', website: '',
-  address: '', photo: '', design: 'classic',
-}
+export default function LandingPage() {
+  const { tr, lang } = useI18n()
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
-interface Result { id: string; url: string; card: CardData }
+  const reviews = REVIEWS[lang] || REVIEWS['es']
 
-interface HistoryEntry {
-  id: string
-  url: string
-  name: string
-  company?: string
-  title?: string
-  createdAt: string
-}
-
-const LS_KEY = 'vcard_history'
-
-function loadHistory(): HistoryEntry[] {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY) || '[]')
-  } catch { return [] }
-}
-
-function saveToHistory(result: Result) {
-  const entries = loadHistory()
-  const entry: HistoryEntry = {
-    id: result.id,
-    url: result.url,
-    name: result.card.name,
-    company: result.card.company,
-    title: result.card.title,
-    createdAt: new Date().toISOString(),
-  }
-  // Evitar duplicados
-  const filtered = entries.filter((e) => e.id !== entry.id)
-  localStorage.setItem(LS_KEY, JSON.stringify([entry, ...filtered].slice(0, 50)))
-}
-
-export default function HomePage() {
-  const [form, setForm] = useState<FormState>(EMPTY)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [result, setResult] = useState<Result | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [history, setHistory] = useState<HistoryEntry[]>([])
-  const [showHistory, setShowHistory] = useState(false)
-  const [showImpressum, setShowImpressum] = useState(false)
-  const [showPrivacy, setShowPrivacy] = useState(false)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [formTab, setFormTab] = useState<'data' | 'design'>('data')
-  const fileRef = useRef<HTMLInputElement>(null)
-  const { tr } = useI18n()
-
-  useEffect(() => {
-    setHistory(loadHistory())
-  }, [])
-
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
-
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setForm((p) => ({ ...p, photo: reader.result as string }))
-    reader.readAsDataURL(file)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    if (!form.name.trim()) { setError(tr('form.error.name')); return }
-    setLoading(true)
-    try {
-      const res = await fetch('/api/cards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al crear la tarjeta')
-      setResult(data)
-      saveToHistory(data)
-      setHistory(loadHistory())
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const shareUrl = result
-    ? result.url + (form.design && form.design !== 'classic' ? `?design=${form.design}` : '')
-    : ''
-
-  const handleCopy = () => {
-    if (!result) return
-    navigator.clipboard.writeText(shareUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2500)
-  }
-
-  const handleNativeShare = async () => {
-    if (!result) return
-    if (navigator.share) {
-      await navigator.share({ url: shareUrl })
-    } else {
-      navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    }
-  }
-
-  const handleCopyHistoryUrl = (url: string, id: string) => {
-    navigator.clipboard.writeText(url)
-    setCopiedId(id)
-    setTimeout(() => setCopiedId(null), 2000)
-  }
-
-  const handleDeleteHistory = (id: string) => {
-    const updated = loadHistory().filter((e) => e.id !== id)
-    localStorage.setItem(LS_KEY, JSON.stringify(updated))
-    setHistory(updated)
-  }
-
-  const handleClearHistory = () => {
-    localStorage.removeItem(LS_KEY)
-    setHistory([])
-  }
+  const faqItems = Array.from({ length: 7 }, (_, i) => ({
+    q: tr(`land.faq.q${i + 1}`),
+    a: tr(`land.faq.a${i + 1}`),
+  }))
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff' }}>
-      {/* ── HEADER ── */}
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'var(--font-jakarta, Plus Jakarta Sans, system-ui, sans-serif)' }}>
+
+      {/* ══ HEADER ══ */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(255,255,255,0.92)',
+        background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid #dfeefb',
-        height: 64,
+        borderBottom: `1px solid ${BORDER}`,
+        height: 68,
         display: 'flex', alignItems: 'center',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em' }}>
-            VCard <span style={{ color: '#fe6c75' }}>Creator</span>
+          <span style={{ fontWeight: 800, fontSize: 22, color: DARK, letterSpacing: '-0.03em' }}>
+            VCard <span style={{ color: CORAL }}>Creator</span>
           </span>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {history.length > 0 && (
-              <button onClick={() => setShowHistory(true)}
-                className="btn-secondary"
-                style={{ height: 40, fontSize: 14, padding: '0 16px', gap: 6 }}>
-                🕐 {tr('history.btn')}
-                <span style={{
-                  background: '#fe6c75', color: '#fff',
-                  borderRadius: 100, fontSize: 11, fontWeight: 700,
-                  padding: '1px 6px', marginLeft: 2,
-                }}>
-                  {history.length}
-                </span>
-              </button>
-            )}
-            <a href="#crear" className="btn-primary" style={{ height: 40, fontSize: 14, padding: '0 20px' }}>
-              {tr('header.create')}
-            </a>
-          </div>
+          <a href="/crear" className="btn-primary" style={{ height: 44, fontSize: 15, padding: '0 24px' }}>
+            {tr('land.header.cta')}
+          </a>
         </div>
       </header>
 
-      {/* ── HERO ── */}
-      <section style={{ background: 'linear-gradient(180deg, #f4f7fb 0%, #fff 100%)', padding: '64px 24px 56px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: '#fff5f5', border: '1.5px solid #fecdd3',
-            color: '#fe6c75', fontSize: 13, fontWeight: 600,
-            padding: '6px 16px', borderRadius: 1000, marginBottom: 24,
-          }}>
-            ✦ {tr('hero.badge')}
-          </div>
-          <h1 style={{ fontSize: 'clamp(36px, 5vw, 52px)', fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 16 }}>
-            {tr('hero.title')}<br />
-            <span style={{ color: '#fe6c75' }}>{tr('hero.title.accent')}</span>
-          </h1>
-          <p style={{ fontSize: 18, color: '#6b7d99', lineHeight: 1.6, marginBottom: 32 }}>
-            {tr('hero.subtitle')}
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 48 }}>
-            <a href="#crear" className="btn-primary">{tr('hero.cta')}</a>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6b7d99', fontSize: 14 }}>
-              <span style={{ color: '#fe6c75' }}>✓</span> {tr('hero.feat1')}
-              <span style={{ color: '#c8d5e3', margin: '0 4px' }}>·</span>
-              <span style={{ color: '#fe6c75' }}>✓</span> {tr('hero.feat2')}
-              <span style={{ color: '#c8d5e3', margin: '0 4px' }}>·</span>
-              <span style={{ color: '#fe6c75' }}>✓</span> {tr('hero.feat3')}
+      {/* ══ HERO ══ */}
+      <section style={{ background: 'linear-gradient(160deg, #f4f7fb 0%, #fff 60%)', padding: '72px 24px 60px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="hero-grid">
+
+          {/* Left */}
+          <div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: '#fff5f5', border: `1.5px solid #fecdd3`,
+              color: CORAL, fontSize: 13, fontWeight: 700,
+              padding: '6px 16px', borderRadius: 1000, marginBottom: 24,
+            }}>
+              {tr('land.hero.badge')}
+            </div>
+
+            <h1 style={{ fontSize: 'clamp(36px, 4.5vw, 56px)', fontWeight: 800, color: DARK, letterSpacing: '-0.04em', lineHeight: 1.08, marginBottom: 20 }}>
+              {tr('land.hero.title1')}<br />
+              <span style={{ color: CORAL }}>{tr('land.hero.title2')}</span><br />
+              {tr('land.hero.title3')}
+            </h1>
+
+            <p style={{ fontSize: 18, color: GRAY, lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
+              {tr('land.hero.subtitle')}
+            </p>
+
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 36 }}>
+              <a href="/crear" className="btn-primary" style={{ fontSize: 16, height: 56, padding: '0 32px' }}>
+                {tr('land.hero.cta')}
+              </a>
+            </div>
+
+            {/* Mini trust */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex' }}>
+                {['32','12','25','48','60'].map((n, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={`https://i.pravatar.cc/36?img=${n}`} alt="user"
+                    style={{ width: 36, height: 36, borderRadius: '50%', border: '2.5px solid #fff', marginLeft: i === 0 ? 0 : -10, objectFit: 'cover' }} />
+                ))}
+              </div>
+              <p style={{ fontSize: 13, color: GRAY }}>{tr('land.hero.trust')}</p>
             </div>
           </div>
 
-          {/* Hero video */}
-          <div style={{
-            borderRadius: 24, overflow: 'hidden',
-            border: '1.5px solid #dfeefb',
-            boxShadow: '0 12px 48px rgba(15,29,44,0.10)',
-          }}>
-            <video
-              src="/sora-video-1774223926866.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{ width: '100%', display: 'block', maxHeight: 380, objectFit: 'cover' }}
-            />
+          {/* Right: Dashboard mockup */}
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              background: '#fff', borderRadius: 20,
+              border: `1.5px solid ${BORDER}`,
+              boxShadow: '0 24px 64px rgba(15,29,44,0.14)',
+              overflow: 'hidden',
+            }}>
+              {/* Browser bar */}
+              <div style={{ background: LIGHT, padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fe6c75' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#4ade80' }}/>
+                <div style={{ flex: 1, marginLeft: 12, background: '#fff', borderRadius: 8, padding: '5px 14px', fontSize: 12, color: GRAY, border: `1px solid ${BORDER}` }}>
+                  vcard-creato.vercel.app
+                </div>
+              </div>
+              {/* Card list */}
+              <div style={{ padding: '20px 20px 8px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: GRAY, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+                  {tr('land.mockup.recent')}
+                </p>
+                {[
+                  { name: 'María García', role: 'CEO · Empresa SL', scans: '2.3K', color: '#fff5f5' },
+                  { name: 'Carlos Pérez', role: 'Developer · Freelance', scans: '1.1K', color: '#f0fdf4' },
+                  { name: 'Anna Müller', role: 'Designer · Studio', scans: '890', color: '#eff6ff' },
+                ].map((card, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 12px', borderRadius: 12, marginBottom: 8,
+                    background: card.color, border: `1px solid ${BORDER}`,
+                  }}>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                      background: `linear-gradient(135deg, ${CORAL}, #f06069)`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 800, fontSize: 13,
+                    }}>
+                      {card.name.split(' ').map(w=>w[0]).join('')}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 13, color: DARK }}>{card.name}</p>
+                      <p style={{ fontSize: 11, color: GRAY }}>{card.role}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: CORAL, background: '#fff5f5', border: `1px solid #fecdd3`, borderRadius: 100, padding: '2px 8px' }}>
+                        vCard
+                      </span>
+                      <p style={{ fontSize: 11, color: GRAY, marginTop: 3 }}>{card.scans} {tr('land.mockup.scans')}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, borderTop: `1px solid ${BORDER}`, margin: '8px 0 0' }}>
+                {[
+                  ['25K+', tr('land.mockup.cards')],
+                  ['98K', tr('land.mockup.scans')],
+                  ['4.9★', tr('land.mockup.rating')],
+                ].map(([val, label], i) => (
+                  <div key={i} style={{ padding: '14px 0', textAlign: 'center', borderRight: i < 2 ? `1px solid ${BORDER}` : 'none' }}>
+                    <p style={{ fontWeight: 800, fontSize: 18, color: i === 0 ? CORAL : DARK }}>{val}</p>
+                    <p style={{ fontSize: 11, color: GRAY }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Floating QR card */}
+            <div style={{
+              position: 'absolute', bottom: -20, right: -20,
+              background: '#fff', borderRadius: 16,
+              border: `1.5px solid ${BORDER}`,
+              boxShadow: '0 12px 32px rgba(15,29,44,0.12)',
+              padding: '14px 16px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            }}>
+              <div style={{ width: 60, height: 60, background: DARK, borderRadius: 8, display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 2, padding: 6 }}>
+                {Array.from({length:36}).map((_,i) => (
+                  <div key={i} style={{ background: [0,1,2,6,7,8,12,13,14,3,9,15,18,19,20,24,25,26,30,31,32,5,11,17,23,29,35,4,22,33].includes(i) ? '#fff' : 'transparent', borderRadius: 1 }} />
+                ))}
+              </div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: GRAY }}>{tr('land.mockup.qr')}</p>
+              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 100, padding: '3px 10px', fontSize: 10, fontWeight: 700, color: '#16a34a' }}>
+                {tr('land.mockup.ready')}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section style={{ background: '#fff', padding: '48px 24px', borderTop: '1px solid #dfeefb' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.02em', textAlign: 'center', marginBottom: 36 }}>
-            {tr('how.title')}
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="how-grid">
-            {([
-              { num: '1', title: tr('how.step1.title'), desc: tr('how.step1.desc'), icon: '✏️' },
-              { num: '2', title: tr('how.step2.title'), desc: tr('how.step2.desc'), icon: '⚡' },
-              { num: '3', title: tr('how.step3.title'), desc: tr('how.step3.desc'), icon: '🔗' },
-            ] as const).map((step) => (
-              <div key={step.num} style={{
-                background: '#f4f7fb', borderRadius: 20,
-                border: '1.5px solid #dfeefb',
-                padding: '24px 20px', textAlign: 'center',
-              }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #fe6c75, #f06069)',
-                  color: '#fff', fontWeight: 800, fontSize: 18,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 14px',
-                }}>
-                  {step.num}
+      {/* ══ TRUST BAR ══ */}
+      <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, padding: '28px 24px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48, flexWrap: 'wrap' }}>
+          {[
+            ['25.000+', tr('land.trust.cards'), true],
+            ['98.000+', tr('land.trust.scans'), false],
+            ['100%', tr('land.trust.free'), false],
+            ['5', tr('land.trust.langs'), false],
+          ].map(([val, label, accent], i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: i > 0 ? 48 : 0 }}>
+              {i > 0 && <div style={{ width: 1, height: 48, background: BORDER, marginRight: 48 }} />}
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 28, fontWeight: 800, color: accent ? CORAL : DARK, letterSpacing: '-0.02em' }}>{val}</p>
+                <p style={{ fontSize: 13, color: GRAY }}>{label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ 3 STEPS ══ */}
+      <section style={{ background: '#fff', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 12 }}>
+              {tr('land.steps.title')}
+            </h2>
+            <p style={{ fontSize: 17, color: GRAY }}>{tr('land.steps.subtitle')}</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="steps-grid">
+
+            {/* Step 1 */}
+            <div style={{ background: LIGHT, borderRadius: 24, border: `1.5px solid ${BORDER}`, overflow: 'hidden' }}>
+              <div style={{ background: '#fff', margin: 16, borderRadius: 16, border: `1.5px solid ${BORDER}`, padding: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    ['👤', tr('form.name'), true],
+                    ['🏢', tr('form.company'), false],
+                    ['📞', tr('form.phone'), false],
+                    ['✉️', tr('form.email'), false],
+                  ].map(([icon, label, active], i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      background: LIGHT, borderRadius: 10, padding: '8px 12px',
+                      border: active ? `2px solid ${CORAL}` : `1.5px solid ${BORDER}`,
+                    }}>
+                      <span style={{ fontSize: 13 }}>{icon as string}</span>
+                      <span style={{ fontSize: 12, fontWeight: active ? 700 : 500, color: active ? DARK : GRAY }}>{label as string}</span>
+                    </div>
+                  ))}
                 </div>
-                <p style={{ fontWeight: 700, fontSize: 15, color: '#0f1d2c', marginBottom: 6 }}>{step.title}</p>
-                <p style={{ fontSize: 13, color: '#6b7d99', lineHeight: 1.6 }}>{step.desc}</p>
+              </div>
+              <div style={{ padding: '0 20px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: CORAL, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
+                  <p style={{ fontWeight: 700, fontSize: 15, color: DARK }}>{tr('land.step1.title')}</p>
+                </div>
+                <p style={{ fontSize: 13, color: GRAY, lineHeight: 1.6 }}>{tr('land.step1.desc')}</p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{ background: LIGHT, borderRadius: 24, border: `1.5px solid ${BORDER}`, overflow: 'hidden' }}>
+              <div style={{ background: '#fff', margin: 16, borderRadius: 16, border: `1.5px solid ${BORDER}`, padding: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: GRAY, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{tr('design.choose')}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { label: tr('design.classic'), bg: '#fff', accent: CORAL, selected: true },
+                    { label: tr('design.dark'), bg: '#1a2540', accent: '#60a5fa', selected: false },
+                    { label: tr('design.ocean'), bg: '#0ea5e9', accent: '#fff', selected: false },
+                    { label: tr('design.rose'), bg: '#ffe4e6', accent: '#e11d48', selected: false },
+                  ].map((d, i) => (
+                    <div key={i} style={{ borderRadius: 10, border: `2px solid ${d.selected ? CORAL : BORDER}`, padding: 8, background: d.bg, position: 'relative' }}>
+                      {d.selected && (
+                        <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: '50%', background: CORAL, color: '#fff', fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>
+                      )}
+                      <div style={{ width: '100%', height: 4, borderRadius: 2, background: d.accent, marginBottom: 5 }} />
+                      <div style={{ height: 4, width: '60%', borderRadius: 2, background: d.accent, opacity: 0.4, marginBottom: 3 }} />
+                      <div style={{ height: 3, width: '40%', borderRadius: 2, background: d.accent, opacity: 0.25 }} />
+                      <p style={{ fontSize: 9, fontWeight: 700, color: d.selected ? CORAL : GRAY, marginTop: 5, textAlign: 'center' }}>{d.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ padding: '0 20px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: CORAL, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
+                  <p style={{ fontWeight: 700, fontSize: 15, color: DARK }}>{tr('land.step2.title')}</p>
+                </div>
+                <p style={{ fontSize: 13, color: GRAY, lineHeight: 1.6 }}>{tr('land.step2.desc')}</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{ background: LIGHT, borderRadius: 24, border: `1.5px solid ${BORDER}`, overflow: 'hidden' }}>
+              <div style={{ background: '#fff', margin: 16, borderRadius: 16, border: `1.5px solid ${BORDER}`, padding: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ background: LIGHT, borderRadius: 10, padding: '8px 12px', border: `1.5px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12 }}>🔗</span>
+                    <span style={{ fontSize: 11, color: GRAY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>vcard-creato.vercel.app/card/...</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: CORAL, background: '#fff5f5', border: `1px solid #fecdd3`, borderRadius: 100, padding: '2px 8px', flexShrink: 0 }}>{tr('result.copy')}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ flex: 1, background: LIGHT, borderRadius: 10, padding: '8px 12px', border: `1.5px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 16 }}>◼</span>
+                      <div>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: DARK }}>QR Code</p>
+                        <p style={{ fontSize: 10, color: GRAY }}>PNG · SVG</p>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: '#f0fdf4', borderRadius: 10, padding: '8px 12px', border: '1.5px solid #86efac', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 14 }}>👤</span>
+                      <div>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: '#16a34a' }}>.vcf</p>
+                        <p style={{ fontSize: 10, color: '#4ade80' }}>{tr('card.save')}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ background: '#7c3aed', borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>⬆ {tr('share.label')}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '0 20px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: CORAL, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</div>
+                  <p style={{ fontWeight: 700, fontSize: 15, color: DARK }}>{tr('land.step3.title')}</p>
+                </div>
+                <p style={{ fontSize: 13, color: GRAY, lineHeight: 1.6 }}>{tr('land.step3.desc')}</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <a href="/crear" className="btn-primary" style={{ fontSize: 16, height: 56, padding: '0 40px' }}>
+              {tr('land.hero.cta')}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ SHOWCASE ══ */}
+      <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 12 }}>
+              {tr('land.showcase.title')}
+            </h2>
+            <p style={{ fontSize: 17, color: GRAY }}>{tr('land.showcase.subtitle')}</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="showcase-grid">
+            {/* Left */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {[
+                { icon: '🔗', t: 'land.sh.url.title', d: 'land.sh.url.desc' },
+                { icon: '◼', t: 'land.sh.qr.title', d: 'land.sh.qr.desc' },
+                { icon: '👤', t: 'land.sh.vcf.title', d: 'land.sh.vcf.desc' },
+                { icon: '🎨', t: 'land.sh.design.title', d: 'land.sh.design.desc' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fff', border: `1.5px solid ${BORDER}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 15, color: DARK, marginBottom: 4 }}>{tr(item.t)}</p>
+                    <p style={{ fontSize: 13, color: GRAY, lineHeight: 1.6 }}>{tr(item.d)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: Phone mockup */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ position: 'relative', width: 280 }}>
+                <div style={{ background: DARK, borderRadius: 40, padding: '14px 10px', boxShadow: '0 32px 80px rgba(15,29,44,0.25)' }}>
+                  <div style={{ background: DARK, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                    <div style={{ width: 80, height: 20, background: '#1a2540', borderRadius: 100 }} />
+                  </div>
+                  <div style={{ background: '#fff', borderRadius: 28, overflow: 'hidden', minHeight: 480 }}>
+                    <div style={{ background: `linear-gradient(135deg, ${CORAL} 0%, #f06069 100%)`, padding: '32px 20px 20px' }}>
+                      <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', border: '3px solid rgba(255,255,255,0.6)', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
+                        👤
+                      </div>
+                      <p style={{ color: '#fff', fontWeight: 800, fontSize: 18, marginBottom: 2 }}>María García</p>
+                      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>CEO · Empresa Digital SL</p>
+                    </div>
+                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {[['📞', '+34 600 000 000'], ['✉️', 'maria@empresa.com'], ['🌐', 'empresa.com'], ['📍', 'Madrid, España']].map(([icon, val], i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 14 }}>{icon}</span>
+                          <span style={{ fontSize: 12, color: GRAY }}>{val}</span>
+                        </div>
+                      ))}
+                      <div style={{ marginTop: 8, background: CORAL, borderRadius: 12, padding: '10px 16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{tr('land.phone.save')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Floating URL */}
+                <div style={{ position: 'absolute', top: 40, right: -50, background: '#fff', borderRadius: 14, border: `1.5px solid ${BORDER}`, boxShadow: '0 8px 24px rgba(15,29,44,0.12)', padding: '10px 14px', fontSize: 11 }}>
+                  <p style={{ fontWeight: 700, color: DARK, marginBottom: 2 }}>{tr('land.mockup.url')}</p>
+                  <p style={{ color: CORAL, fontWeight: 600 }}>vcard-creato.vercel.app/...</p>
+                </div>
+                {/* Floating QR */}
+                <div style={{ position: 'absolute', bottom: 60, left: -44, background: '#fff', borderRadius: 14, border: `1.5px solid ${BORDER}`, boxShadow: '0 8px 24px rgba(15,29,44,0.12)', padding: '10px 14px', textAlign: 'center' }}>
+                  <div style={{ width: 48, height: 48, background: DARK, borderRadius: 8, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>◼</div>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: GRAY }}>{tr('land.mockup.qr')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ FEATURES ══ */}
+      <section style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 12 }}>
+              {tr('land.features.title')}
+            </h2>
+            <p style={{ fontSize: 17, color: GRAY }}>{tr('land.features.subtitle')}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }} className="features-grid">
+            {[
+              { icon: '🎨', t: 'land.feat1.title', d: 'land.feat1.desc' },
+              { icon: '⚡', t: 'land.feat2.title', d: 'land.feat2.desc' },
+              { icon: '🔗', t: 'land.feat3.title', d: 'land.feat3.desc' },
+              { icon: '📲', t: 'land.feat4.title', d: 'land.feat4.desc' },
+            ].map((f, i) => (
+              <div key={i} style={{ background: LIGHT, borderRadius: 20, border: `1.5px solid ${BORDER}`, padding: '28px 22px' }}>
+                <div style={{ width: 52, height: 52, borderRadius: 14, background: '#fff', border: `1.5px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>
+                  {f.icon}
+                </div>
+                <p style={{ fontWeight: 700, fontSize: 16, color: DARK, marginBottom: 8 }}>{tr(f.t)}</p>
+                <p style={{ fontSize: 13, color: GRAY, lineHeight: 1.65 }}>{tr(f.d)}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── AD SLOT TOP ── */}
-      {process.env.NODE_ENV === 'development' ? (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 8px' }}>
-          <div style={{
-            background: '#f4f7fb', border: '2px dashed #c8d5e3',
-            borderRadius: 12, height: 90,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#a8b8cc', fontSize: 12, fontWeight: 600, gap: 8,
-          }}>
-            📢 Google Ad — 728×90 (solo visible en desarrollo)
+      {/* ══ SOCIAL PROOF WITH PHOTO ══ */}
+      <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="social-grid">
+          {/* Photo */}
+          <div style={{ borderRadius: 24, overflow: 'hidden', boxShadow: '0 24px 64px rgba(15,29,44,0.12)', position: 'relative' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80&auto=format&fit=crop"
+              alt="professionals sharing digital business cards"
+              style={{ width: '100%', height: 400, objectFit: 'cover', display: 'block' }}
+            />
+            <div style={{
+              position: 'absolute', bottom: 20, left: 20, right: 20,
+              background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
+              borderRadius: 16, padding: '16px 20px', border: `1.5px solid ${BORDER}`,
+              boxShadow: '0 8px 32px rgba(15,29,44,0.12)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>MG</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: DARK }}>María García</p>
+                  <p style={{ fontSize: 12, color: GRAY }}>CEO · Empresa Digital SL</p>
+                </div>
+                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 100, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#16a34a' }}>
+                  {tr('land.mockup.shared')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reviews right */}
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff5f5', border: `1.5px solid #fecdd3`, color: CORAL, fontSize: 13, fontWeight: 700, padding: '6px 14px', borderRadius: 1000, marginBottom: 20 }}>
+              {tr('land.social.badge')}
+            </div>
+            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 8 }}>
+              {tr('land.social.title')}
+            </h2>
+            <p style={{ fontSize: 16, color: GRAY, marginBottom: 32 }}>{tr('land.social.subtitle')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {reviews.slice(0, 3).map((r, i) => (
+                <div key={i} style={{ background: '#fff', borderRadius: 16, border: `1.5px solid ${BORDER}`, padding: '16px 20px', boxShadow: '0 2px 12px rgba(15,29,44,0.05)' }}>
+                  <p style={{ fontSize: 13, color: DARK, lineHeight: 1.6, marginBottom: 12 }}>"{r.text}"</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 11, flexShrink: 0 }}>
+                      {r.name.split(' ').map(w=>w[0]).join('')}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 700, fontSize: 12, color: DARK }}>{r.name}</p>
+                      <p style={{ fontSize: 11, color: GRAY }}>{r.location}</p>
+                    </div>
+                    <div style={{ marginLeft: 'auto', color: '#fbbf24', fontSize: 12 }}>★★★★★</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      ) : (process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 8px' }}>
-          <ins
-            className="adsbygoogle"
-            style={{ display: 'block' }}
-            data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT}
-            data-ad-slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT || '0000000000'}
-            data-ad-format="auto"
-            data-full-width-responsive="true"
-          />
-        </div>
-      ))}
-
-      {/* ── FORM / RESULT ── */}
-      <section id="crear" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px' }}>
-
-        {!result ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,420px)', gap: 32, alignItems: 'start' }}
-            className="form-grid">
-            {/* ── LEFT: Form ── */}
-            <div style={{
-              background: '#fff',
-              border: '1.5px solid #dfeefb',
-              borderRadius: 24,
-              padding: 32,
-              boxShadow: '0 4px 24px rgba(15,29,44,0.06)',
-            }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', marginBottom: 20, letterSpacing: '-0.01em' }}>
-                {tr('form.title')}
-              </h2>
-
-              {/* ── TABS ── */}
-              <div style={{ display: 'flex', gap: 4, background: '#f4f7fb', borderRadius: 14, padding: 4, marginBottom: 24 }}>
-                {(['data', 'design'] as const).map((tab) => (
-                  <button key={tab} type="button" onClick={() => setFormTab(tab)}
-                    style={{
-                      flex: 1, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
-                      fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
-                      background: formTab === tab ? '#fff' : 'transparent',
-                      color: formTab === tab ? '#0f1d2c' : '#6b7d99',
-                      boxShadow: formTab === tab ? '0 1px 6px rgba(15,29,44,0.10)' : 'none',
-                      transition: 'all 150ms',
-                    }}>
-                    {tab === 'data' ? `📝 ${tr('form.tab.data')}` : `🎨 ${tr('form.tab.design')}`}
-                  </button>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-
-                {/* ── DATA TAB ── */}
-                {formTab === 'data' && (<>
-                  {/* Photo */}
-                  <div>
-                    <label style={labelStyle}>{tr('form.photo')}</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8 }}>
-                      {form.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={form.photo} alt="preview"
-                          style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fe6c75' }} />
-                      ) : (
-                        <div style={{
-                          width: 56, height: 56, borderRadius: '50%',
-                          background: '#f4f7fb', border: '2px dashed #c8d5e3',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 22, color: '#a8b8cc',
-                        }}>
-                          👤
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button type="button" onClick={() => fileRef.current?.click()}
-                          className="btn-secondary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}>
-                          {tr('form.photo.upload')}
-                        </button>
-                        {form.photo && (
-                          <button type="button" onClick={() => setForm((p) => ({ ...p, photo: '' }))}
-                            style={{ height: 36, fontSize: 13, padding: '0 14px', borderRadius: 1000, border: '1.5px solid #fecdd3', background: '#fff5f5', color: '#fe6c75', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                            {tr('form.photo.remove')}
-                          </button>
-                        )}
-                      </div>
-                      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
-                    </div>
-                  </div>
-
-                  <Field label={tr('form.name')} name="name" value={form.name} onChange={handleChange} placeholder={tr('form.name.ph')} />
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    <Field label={tr('form.company')} name="company" value={form.company} onChange={handleChange} placeholder={tr('form.company.ph')} />
-                    <Field label={tr('form.title_f')} name="title" value={form.title} onChange={handleChange} placeholder={tr('form.title_f.ph')} />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    <Field label={tr('form.phone')} name="phone" value={form.phone} onChange={handleChange} placeholder={tr('form.phone.ph')} type="tel" />
-                    <Field label={tr('form.email')} name="email" value={form.email} onChange={handleChange} placeholder={tr('form.email.ph')} type="email" />
-                  </div>
-
-                  <Field label={tr('form.website')} name="website" value={form.website} onChange={handleChange} placeholder={tr('form.website.ph')} type="url" />
-                  <Field label={tr('form.address')} name="address" value={form.address} onChange={handleChange} placeholder={tr('form.address.ph')} />
-                </>)}
-
-                {/* ── DESIGN TAB ── */}
-                {formTab === 'design' && (
-                  <div>
-                    <p style={{ fontSize: 13, color: '#6b7d99', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      {tr('design.choose')}
-                    </p>
-                    <div className="design-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                      {(['classic', 'dark', 'ocean', 'rose'] as const).map((d) => {
-                        const selected = (form.design || 'classic') === d
-                        return (
-                          <button key={d} type="button"
-                            onClick={() => setForm((p) => ({ ...p, design: d }))}
-                            style={{
-                              border: `2px solid ${selected ? '#fe6c75' : '#dfeefb'}`,
-                              borderRadius: 16, padding: 10, cursor: 'pointer',
-                              background: selected ? '#fff5f5' : '#fff',
-                              position: 'relative', transition: 'all 200ms',
-                              textAlign: 'left',
-                            }}>
-                            {selected && (
-                              <div style={{
-                                position: 'absolute', top: 8, right: 8, zIndex: 1,
-                                width: 22, height: 22, borderRadius: '50%',
-                                background: '#fe6c75', color: '#fff',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 11, fontWeight: 800,
-                              }}>✓</div>
-                            )}
-                            <div style={{ pointerEvents: 'none', marginBottom: 8 }}>
-                              <CardPreview
-                                card={{ ...form, design: d }}
-                                size="sm"
-                                namePlaceholder={form.name || tr('preview.name')}
-                                emptyPlaceholder=""
-                              />
-                            </div>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: selected ? '#fe6c75' : '#6b7d99', textAlign: 'center', textTransform: 'capitalize' }}>
-                              {tr(`design.${d}`)}
-                            </p>
-                          </button>
-                        )
-                      })}
-                    </div>
-                    <button type="button" onClick={() => setFormTab('data')}
-                      style={{
-                        width: '100%', height: 44, marginTop: 18,
-                        background: '#f4f7fb', border: '1.5px solid #dfeefb',
-                        borderRadius: 1000, fontWeight: 700, fontSize: 14,
-                        color: '#424e65', cursor: 'pointer', fontFamily: 'inherit',
-                        transition: 'all 200ms',
-                      }}>
-                      ← {tr('form.tab.data')}
-                    </button>
-                  </div>
-                )}
-
-                {error && (
-                  <div style={{ background: '#fff5f5', border: '1.5px solid #fecdd3', borderRadius: 12, padding: '10px 16px', color: '#e1545d', fontSize: 14, fontWeight: 500 }}>
-                    ⚠ {error}
-                  </div>
-                )}
-
-                <button type="submit" disabled={loading} className="btn-primary"
-                  style={{ width: '100%', height: 52, fontSize: 16 }}>
-                  {loading ? tr('form.submitting') : tr('form.submit')}
-                </button>
-              </form>
-            </div>
-
-            {/* ── RIGHT: Live Preview ── */}
-            <div style={{ position: 'sticky', top: 80 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7d99', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {tr('preview.label')}
-              </p>
-              <CardPreview card={form} namePlaceholder={tr('preview.name')} emptyPlaceholder={tr('preview.empty')} />
-              {form.design && form.design !== 'classic' && (
-                <div style={{ marginTop: 8, textAlign: 'center' }}>
-                  <span style={{ fontSize: 11, color: '#fe6c75', fontWeight: 700, background: '#fff5f5', border: '1px solid #fecdd3', borderRadius: 100, padding: '3px 10px' }}>
-                    🎨 {tr(`design.${form.design}`)}
-                  </span>
-                </div>
-              )}
-              <p style={{ fontSize: 12, color: '#a8b8cc', marginTop: 10, textAlign: 'center' }}>
-                {tr('preview.hint')}
-              </p>
-            </div>
-          </div>
-        ) : (
-          /* ── RESULT ── */
-          <div style={{ maxWidth: 720, margin: '0 auto' }}>
-            {/* Success banner */}
-            <div style={{
-              background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
-              border: '1.5px solid #86efac',
-              borderRadius: 16, padding: '14px 20px',
-              display: 'flex', alignItems: 'center', gap: 10,
-              marginBottom: 32,
-            }}>
-              <span style={{ fontSize: 20 }}>✓</span>
-              <div>
-                <p style={{ fontWeight: 700, color: '#16a34a', fontSize: 15 }}>{tr('result.success')}</p>
-                <p style={{ color: '#4ade80', fontSize: 13 }}>{tr('result.success.sub')}</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 32, alignItems: 'start', marginBottom: 32 }}
-              className="result-grid">
-              {/* Card preview */}
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7d99', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{tr('result.card.label')}</p>
-                <CardPreview card={{ ...result.card, design: form.design }} />
-              </div>
-
-              {/* QR */}
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7d99', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {tr('result.qr.label')}
-                </p>
-                <div style={{
-                  background: '#fff', border: '1.5px solid #dfeefb',
-                  borderRadius: 20, padding: 16,
-                  boxShadow: '0 4px 20px rgba(15,29,44,0.06)',
-                  display: 'inline-block',
-                }}>
-                  <QRDisplay url={shareUrl} size={180} showDownload filename={result.card.name.replace(/\s+/g, '_')} />
-                </div>
-                <p style={{ fontSize: 12, color: '#a8b8cc', marginTop: 8 }}>{tr('result.qr.hint')}</p>
-              </div>
-            </div>
-
-            {/* URL box */}
-            <div style={{
-              background: '#f4f7fb', border: '1.5px solid #dfeefb',
-              borderRadius: 16, padding: '16px 20px', marginBottom: 20,
-            }}>
-              <p style={{ fontSize: 13, color: '#6b7d99', fontWeight: 600, marginBottom: 10 }}>{tr('result.url.label')}</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input readOnly value={shareUrl}
-                  style={{ flex: 1, background: '#fff', border: '1.5px solid #dfeefb', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#424e65', fontFamily: 'inherit', minWidth: 0 }} />
-                <button onClick={handleCopy}
-                  style={{
-                    height: 44, padding: '0 18px', borderRadius: 10, border: '1.5px solid #dfeefb',
-                    background: copied ? '#fe6c75' : '#fff', color: copied ? '#fff' : '#424e65',
-                    fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'all 200ms', fontFamily: 'inherit', whiteSpace: 'nowrap',
-                  }}>
-                  {copied ? tr('result.copied') : tr('result.copy')}
-                </button>
-              </div>
-            </div>
-
-            {/* ── Share button ── */}
-            <div style={{ marginBottom: 16 }}>
-              <button onClick={handleNativeShare}
-                style={{
-                  width: '100%', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 1000,
-                  fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit',
-                  transition: 'all 200ms', boxShadow: '0 4px 20px rgba(124,58,237,0.30)',
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#6d28d9' }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#7c3aed' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                {tr('share.label')}
-              </button>
-            </div>
-
-            {/* Actions — row 1 */}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
-              <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 0, justifyContent: 'center', whiteSpace: 'nowrap' }}>
-                {tr('result.download')}
-              </a>
-              <a href={shareUrl} target="_blank" rel="noopener noreferrer"
-                style={{
-                  flex: 1, minWidth: 0, height: 52,
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  background: '#e8faf2', border: '1.5px solid #86efac',
-                  color: '#16a34a', borderRadius: 1000,
-                  fontWeight: 700, fontSize: 15, textDecoration: 'none',
-                  fontFamily: 'inherit', transition: 'all 200ms', whiteSpace: 'nowrap',
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#d1fae5' }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#e8faf2' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                {tr('result.open')}
-              </a>
-            </div>
-
-            {/* Actions — row 2: nueva tarjeta */}
-            <button onClick={() => { setResult(null); setForm(EMPTY) }}
-              style={{
-                width: '100%', height: 46,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                background: '#eef4ff', border: '1.5px solid #bfdbfe',
-                color: '#3b82f6', borderRadius: 1000,
-                fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                fontFamily: 'inherit', transition: 'all 200ms',
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = '#dbeafe' }}
-              onMouseOut={(e) => { e.currentTarget.style.background = '#eef4ff' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              {tr('result.new')}
-            </button>
-          </div>
-        )}
       </section>
 
-      {/* ── LWEB PROMO BANNER ── */}
-      <div style={{ background: '#f4f7fb', borderTop: '1px solid #dfeefb', padding: '20px 24px' }}>
-        <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            maxWidth: 680, margin: '0 auto',
-            background: '#fff', borderRadius: 16,
-            border: '1.5px solid #dfeefb', padding: '16px 22px',
-            textDecoration: 'none', gap: 16,
-            boxShadow: '0 4px 16px rgba(15,29,44,0.06)',
-            transition: 'box-shadow 200ms, border-color 200ms',
-          }}
-          onMouseOver={(e) => { e.currentTarget.style.borderColor = '#fe6c75'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(254,108,117,0.15)' }}
-          onMouseOut={(e) => { e.currentTarget.style.borderColor = '#dfeefb'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,29,44,0.06)' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logolweb.png" alt="Lweb" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontWeight: 800, fontSize: 14, color: '#0f1d2c', letterSpacing: '-0.01em', marginBottom: 1 }}>
-                Lweb.ch — App & Web Entwicklung
+      {/* ══ ALL REVIEWS ══ */}
+      <section style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, padding: '72px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 8 }}>
+              {tr('land.reviews.title')}
+            </h2>
+            <p style={{ fontSize: 16, color: GRAY }}>{tr('land.reviews.subtitle')}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }} className="reviews-grid">
+            {reviews.map((r, i) => (
+              <div key={i} style={{ background: LIGHT, borderRadius: 20, border: `1.5px solid ${BORDER}`, padding: '22px 20px' }}>
+                <div style={{ color: '#fbbf24', fontSize: 14, marginBottom: 10 }}>★★★★★</div>
+                <p style={{ fontSize: 13, color: DARK, lineHeight: 1.65, marginBottom: 16 }}>"{r.text}"</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+                    {r.name.split(' ').map(w=>w[0]).join('')}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: DARK }}>{r.name}</p>
+                    <p style={{ fontSize: 11, color: GRAY }}>{r.location}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ CTA BAND ══ */}
+      <section style={{ background: `linear-gradient(135deg, ${DARK} 0%, #1a2a40 100%)`, padding: '72px 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 16 }}>
+            {tr('land.cta.title1')}<br />
+            <span style={{ color: CORAL }}>{tr('land.cta.title2')}</span>
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', marginBottom: 36 }}>
+            {tr('land.cta.subtitle')}
+          </p>
+          <a href="/crear" className="btn-primary" style={{ fontSize: 17, height: 60, padding: '0 44px' }}>
+            {tr('land.cta.btn')}
+          </a>
+        </div>
+      </section>
+
+      {/* ══ FAQ ══ */}
+      <section style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 780, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 8 }}>
+              {tr('land.faq.title')}
+            </h2>
+            <p style={{ fontSize: 16, color: GRAY }}>{tr('land.faq.subtitle')}</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {faqItems.map((item, i) => (
+              <div key={i} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', gap: 16, textAlign: 'left', fontFamily: 'inherit' }}>
+                  <span style={{ fontWeight: 700, fontSize: 16, color: DARK }}>{item.q}</span>
+                  <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', background: openFaq === i ? CORAL : LIGHT, border: `1.5px solid ${openFaq === i ? CORAL : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: openFaq === i ? '#fff' : GRAY, fontSize: 16, fontWeight: 700, transition: 'all 200ms' }}>
+                    {openFaq === i ? '−' : '+'}
+                  </span>
+                </button>
+                {openFaq === i && (
+                  <p style={{ fontSize: 14, color: GRAY, lineHeight: 1.7, paddingBottom: 20 }}>{item.a}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ FOOTER ══ */}
+      <footer style={{ background: DARK, padding: '56px 24px 32px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }} className="footer-grid">
+            <div>
+              <p style={{ fontWeight: 800, fontSize: 22, color: '#fff', letterSpacing: '-0.03em', marginBottom: 12 }}>
+                VCard <span style={{ color: CORAL }}>Creator</span>
               </p>
-              <p style={{ fontSize: 12, color: '#6b7d99', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {tr('lweb.tagline')}
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: 280 }}>
+                {tr('land.footer.desc')}
+              </p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 16 }}>
+                {tr('footer.made')} <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ color: CORAL, fontWeight: 600 }}>Lweb.ch</a> — Schweiz
               </p>
             </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>{tr('land.footer.product')}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[['land.footer.create', '/crear'], ['land.footer.how', '/crear'], ['land.footer.designs', '/crear']].map(([key, href], i) => (
+                  <a key={i} href={href} style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}
+                    onMouseOver={(e) => (e.currentTarget.style.color = CORAL)}
+                    onMouseOut={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}>
+                    {tr(key)}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>{tr('land.footer.features')}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {['land.footer.digital', 'land.footer.qr', 'land.footer.url', 'land.footer.vcf'].map((key, i) => (
+                  <span key={i} style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>{tr(key)}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>{tr('land.footer.legal')}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Lweb.ch</a>
+                <a href="mailto:info@lweb.ch" style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>info@lweb.ch</a>
+                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>9475 Sevelen, CH</span>
+              </div>
+            </div>
           </div>
-          <span style={{
-            flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fe6c75',
-            background: '#fff5f5', border: '1.5px solid #fecdd3',
-            borderRadius: 1000, padding: '5px 13px', whiteSpace: 'nowrap',
-          }}>
-            lweb.ch →
-          </span>
-        </a>
-      </div>
 
-      {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid #dfeefb', background: '#f4f7fb', padding: '20px 24px 24px', textAlign: 'center' }}>
-        <div style={{ marginBottom: 14 }}>
-          <LangSwitcher />
-        </div>
-        <p style={{ fontSize: 13, color: '#6b7d99', marginBottom: 10 }}>
-          {tr('footer.made')}{' '}
-          <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ color: '#fe6c75', fontWeight: 600 }}>Lweb.ch</a>
-          {' '}— App & Web Entwicklung
-        </p>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-          <button onClick={() => setShowImpressum(true)}
-            style={{ background: 'none', border: 'none', color: '#a8b8cc', fontSize: 12, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
-            onMouseOver={(e) => (e.currentTarget.style.color = '#fe6c75')}
-            onMouseOut={(e) => (e.currentTarget.style.color = '#a8b8cc')}>
-            {tr('footer.impressum')}
-          </button>
-          <span style={{ color: '#dfeefb' }}>·</span>
-          <button onClick={() => setShowPrivacy(true)}
-            style={{ background: 'none', border: 'none', color: '#a8b8cc', fontSize: 12, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
-            onMouseOver={(e) => (e.currentTarget.style.color = '#fe6c75')}
-            onMouseOut={(e) => (e.currentTarget.style.color = '#a8b8cc')}>
-            {tr('footer.privacy')}
-          </button>
+          {/* Bottom bar */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+              {tr('land.footer.rights')}
+            </p>
+            <LangSwitcher />
+          </div>
         </div>
       </footer>
 
-      {/* ── HISTORY MODAL ── */}
-      {showHistory && (
-        <div
-          onClick={() => setShowHistory(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1000,
-            background: 'rgba(15,29,44,0.5)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#fff', borderRadius: 24,
-              width: '100%', maxWidth: 560,
-              maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-              boxShadow: '0 20px 60px rgba(15,29,44,0.2)',
-              border: '1.5px solid #dfeefb',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Modal header */}
-            <div style={{
-              padding: '20px 24px', borderBottom: '1px solid #dfeefb',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              flexShrink: 0,
-            }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.01em' }}>
-                  🕐 {tr('history.title')}
-                </h2>
-                <p style={{ fontSize: 13, color: '#6b7d99', marginTop: 2 }}>
-                  {history.length} {history.length === 1 ? tr('history.card') : tr('history.cards')} {tr('history.saved')}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {history.length > 0 && (
-                  <button onClick={handleClearHistory}
-                    style={{ fontSize: 12, color: '#a8b8cc', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '4px 8px' }}>
-                    {tr('history.clearAll')}
-                  </button>
-                )}
-                <button onClick={() => setShowHistory(false)}
-                  style={{
-                    width: 34, height: 34, borderRadius: '50%',
-                    background: '#f4f7fb', border: 'none', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16, color: '#6b7d99',
-                  }}>
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Modal body */}
-            <div style={{ overflowY: 'auto', flex: 1, padding: '12px 16px' }}>
-              {history.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#a8b8cc', padding: '40px 0', fontSize: 14 }}>
-                  {tr('history.empty')}
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {history.map((entry) => {
-                    const initials = entry.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
-                    const date = new Date(entry.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-                    return (
-                      <div key={entry.id} style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '12px 14px', borderRadius: 14,
-                        border: '1.5px solid #dfeefb', background: '#f4f7fb',
-                      }}>
-                        {/* Avatar */}
-                        <div style={{
-                          width: 42, height: 42, borderRadius: '50%', flexShrink: 0,
-                          background: 'linear-gradient(135deg, #fe6c75, #f06069)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontWeight: 800, fontSize: 14,
-                        }}>
-                          {initials}
-                        </div>
-
-                        {/* Info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontWeight: 700, fontSize: 14, color: '#0f1d2c', truncate: true } as React.CSSProperties}>
-                            {entry.name}
-                          </p>
-                          <p style={{ fontSize: 12, color: '#6b7d99', marginTop: 1 }}>
-                            {[entry.title, entry.company].filter(Boolean).join(' · ') || date}
-                          </p>
-                        </div>
-
-                        {/* Actions */}
-                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                          <button
-                            onClick={() => handleCopyHistoryUrl(entry.url, entry.id)}
-                            title="Copiar enlace"
-                            style={{
-                              height: 32, padding: '0 10px', borderRadius: 8,
-                              border: '1.5px solid #dfeefb',
-                              background: copiedId === entry.id ? '#fe6c75' : '#fff',
-                              color: copiedId === entry.id ? '#fff' : '#424e65',
-                              fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                              transition: 'all 200ms',
-                            }}>
-                            {copiedId === entry.id ? '✓' : '🔗'}
-                          </button>
-                          <a href={entry.url} target="_blank" rel="noopener noreferrer"
-                            title="Abrir tarjeta"
-                            style={{
-                              height: 32, padding: '0 10px', borderRadius: 8,
-                              border: '1.5px solid #dfeefb', background: '#fff',
-                              color: '#424e65', fontSize: 12, fontWeight: 600,
-                              display: 'flex', alignItems: 'center', textDecoration: 'none',
-                            }}>
-                            ↗
-                          </a>
-                          <button
-                            onClick={() => handleDeleteHistory(entry.id)}
-                            title="Eliminar"
-                            style={{
-                              height: 32, width: 32, borderRadius: 8,
-                              border: '1.5px solid #fecdd3', background: '#fff5f5',
-                              color: '#fe6c75', fontSize: 13, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── IMPRESSUM MODAL ── */}
-      {showImpressum && (
-        <div onClick={() => setShowImpressum(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(15,29,44,0.5)', backdropFilter: 'blur(6px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-        }}>
-          <div onClick={(e) => e.stopPropagation()} style={{
-            background: '#fff', borderRadius: 24, width: '100%', maxWidth: 480,
-            boxShadow: '0 20px 60px rgba(15,29,44,0.2)', border: '1.5px solid #dfeefb',
-            overflow: 'hidden',
-          }}>
-            <div style={{ height: 4, background: 'linear-gradient(90deg, #fe6c75, #f06069)' }} />
-            <div style={{ padding: '24px 28px 28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.01em' }}>
-                  {tr('impressum.title')}
-                </h2>
-                <button onClick={() => setShowImpressum(false)} style={{
-                  width: 34, height: 34, borderRadius: '50%', background: '#f4f7fb',
-                  border: 'none', cursor: 'pointer', fontSize: 16, color: '#6b7d99', flexShrink: 0,
-                }}>✕</button>
-              </div>
-              <p style={{ fontWeight: 800, fontSize: 16, color: '#0f1d2c', marginBottom: 2 }}>Lweb</p>
-              <p style={{ fontSize: 14, color: '#fe6c75', fontWeight: 600, marginBottom: 12 }}>{tr('impressum.role')}</p>
-              <p style={{ fontSize: 14, color: '#6b7d99', lineHeight: 1.6, marginBottom: 20 }}>{tr('impressum.desc')}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: '#424e65' }}>
-                <span>✉ <a href="mailto:info@lweb.ch" style={{ color: '#fe6c75', fontWeight: 600 }}>info@lweb.ch</a></span>
-                <span>☎ <a href="tel:+41765608645" style={{ color: '#424e65' }}>+41 76 560 86 45</a></span>
-                <span>📍 9475 Sevelen, Schweiz</span>
-                <span>🌐 <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ color: '#fe6c75', fontWeight: 600 }}>lweb.ch</a></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── PRIVACY MODAL ── */}
-      {showPrivacy && (
-        <div onClick={() => setShowPrivacy(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(15,29,44,0.5)', backdropFilter: 'blur(6px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-        }}>
-          <div onClick={(e) => e.stopPropagation()} style={{
-            background: '#fff', borderRadius: 24, width: '100%', maxWidth: 480,
-            boxShadow: '0 20px 60px rgba(15,29,44,0.2)', border: '1.5px solid #dfeefb',
-            overflow: 'hidden',
-          }}>
-            <div style={{ height: 4, background: 'linear-gradient(90deg, #fe6c75, #f06069)' }} />
-            <div style={{ padding: '24px 28px 28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.01em' }}>
-                  {tr('privacy.title')}
-                </h2>
-                <button onClick={() => setShowPrivacy(false)} style={{
-                  width: 34, height: 34, borderRadius: '50%', background: '#f4f7fb',
-                  border: 'none', cursor: 'pointer', fontSize: 16, color: '#6b7d99', flexShrink: 0,
-                }}>✕</button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 14, color: '#6b7d99', lineHeight: 1.7 }}>
-                <p>{tr('privacy.p1')}</p>
-                <p>{tr('privacy.p2')}</p>
-                <p>{tr('privacy.p3')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Responsive styles */}
-      <style>{`
-        @media (max-width: 768px) {
-          .form-grid { grid-template-columns: 1fr !important; }
-          .result-grid { grid-template-columns: 1fr !important; }
-          .how-grid { grid-template-columns: 1fr !important; }
-          .design-grid { grid-template-columns: 1fr !important; }
-          .btn-download { font-size: 13px !important; padding: 0 12px !important; }
-        }
-      `}</style>
-    </div>
-  )
-}
-
-const labelStyle: React.CSSProperties = {
-  fontSize: 13, fontWeight: 600, color: '#6b7d99',
-  display: 'block', marginBottom: 6,
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#f4f7fb',
-  border: '1.5px solid #dfeefb',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontSize: 15,
-  color: '#0f1d2c',
-  fontFamily: 'inherit',
-  transition: 'border-color 200ms, box-shadow 200ms',
-  outline: 'none',
-}
-
-function Field({
-  label, name, value, onChange, placeholder, type = 'text',
-}: {
-  label: string; name: string; value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  placeholder?: string; type?: string
-}) {
-  return (
-    <div>
-      <label style={labelStyle}>{label}</label>
-      <input
-        type={type} name={name} value={value} onChange={onChange}
-        placeholder={placeholder}
-        style={inputStyle}
-        className="lweb-input"
-      />
     </div>
   )
 }
