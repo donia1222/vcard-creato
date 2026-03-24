@@ -12,7 +12,7 @@ const jakarta = Plus_Jakarta_Sans({
   display: 'swap',
 })
 
-const BASE_URL = 'https://vcard-creato.vercel.app'
+const BASE_URL = 'https://vcard.lweb.ch'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
