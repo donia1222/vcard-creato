@@ -544,7 +544,7 @@ export default function HomePage() {
             </div>
 
             {/* Actions — row 1 */}
-            <div className="actions-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
               <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 0, justifyContent: 'center', whiteSpace: 'nowrap' }}>
                 {tr('result.download')}
               </a>
@@ -865,8 +865,7 @@ export default function HomePage() {
           .result-grid { grid-template-columns: 1fr !important; }
           .how-grid { grid-template-columns: 1fr !important; }
           .design-grid { grid-template-columns: 1fr !important; }
-          .actions-row { flex-direction: column !important; }
-          .actions-row > * { flex: unset !important; width: 100% !important; box-sizing: border-box !important; }
+          .btn-download { font-size: 13px !important; padding: 0 12px !important; }
         }
       `}</style>
     </div>
