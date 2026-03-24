@@ -383,7 +383,7 @@ export default function HomePage() {
                     <p style={{ fontSize: 13, color: '#6b7d99', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {tr('design.choose')}
                     </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <div className="design-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                       {(['classic', 'dark', 'ocean', 'rose'] as const).map((d) => {
                         const selected = (form.design || 'classic') === d
                         return (
@@ -531,32 +531,31 @@ export default function HomePage() {
             <div style={{ marginBottom: 16 }}>
               <button onClick={handleNativeShare}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  height: 44, padding: '0 22px', borderRadius: 1000,
-                  background: '#fe6c75', color: '#fff', border: 'none',
-                  fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                  fontFamily: 'inherit', transition: 'filter 200ms',
+                  width: '100%', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 1000,
+                  fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all 200ms', boxShadow: '0 4px 20px rgba(124,58,237,0.30)',
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(0.9)' }}
-                onMouseOut={(e) => { e.currentTarget.style.filter = 'none' }}>
+                onMouseOver={(e) => { e.currentTarget.style.background = '#6d28d9' }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#7c3aed' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                 {tr('share.label')}
               </button>
             </div>
 
             {/* Actions — row 1 */}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
-              <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 180, justifyContent: 'center' }}>
+            <div className="actions-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+              <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary" style={{ flex: 1, minWidth: 0, justifyContent: 'center', whiteSpace: 'nowrap' }}>
                 {tr('result.download')}
               </a>
               <a href={shareUrl} target="_blank" rel="noopener noreferrer"
                 style={{
-                  flex: 1, minWidth: 140, height: 52,
+                  flex: 1, minWidth: 0, height: 52,
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                   background: '#e8faf2', border: '1.5px solid #86efac',
                   color: '#16a34a', borderRadius: 1000,
                   fontWeight: 700, fontSize: 15, textDecoration: 'none',
-                  fontFamily: 'inherit', transition: 'all 200ms',
+                  fontFamily: 'inherit', transition: 'all 200ms', whiteSpace: 'nowrap',
                 }}
                 onMouseOver={(e) => { e.currentTarget.style.background = '#d1fae5' }}
                 onMouseOut={(e) => { e.currentTarget.style.background = '#e8faf2' }}>
@@ -865,6 +864,9 @@ export default function HomePage() {
           .form-grid { grid-template-columns: 1fr !important; }
           .result-grid { grid-template-columns: 1fr !important; }
           .how-grid { grid-template-columns: 1fr !important; }
+          .design-grid { grid-template-columns: 1fr !important; }
+          .actions-row { flex-direction: column !important; }
+          .actions-row > * { flex: unset !important; width: 100% !important; box-sizing: border-box !important; }
         }
       `}</style>
     </div>
