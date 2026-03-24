@@ -101,9 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $db = getDB();
+        $allowed_designs = ['classic','dark','ocean','rose','gradient','minimal','split','glass'];
+        $design = in_array($body['design'] ?? '', $allowed_designs) ? $body['design'] : 'classic';
+
         $stmt = $db->prepare("
-            INSERT INTO vcards (id, name, company, title, phone, email, website, address, photo)
-            VALUES (:id, :name, :company, :title, :phone, :email, :website, :address, :photo)
+            INSERT INTO vcards (id, name, company, title, phone, email, website, address, photo, design)
+            VALUES (:id, :name, :company, :title, :phone, :email, :website, :address, :photo, :design)
         ");
         $stmt->execute([
             ':id'      => $id,
@@ -115,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':website' => clean($body['website'] ?? null),
             ':address' => clean($body['address'] ?? null),
             ':photo'   => $body['photo'] ?? null,   // base64, sin sanitize
+            ':design'  => $design,
         ]);
 
         $cardUrl = APP_BASE_URL . '/card/' . $id;
@@ -132,6 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'website' => clean($body['website'] ?? null),
                 'address' => clean($body['address'] ?? null),
                 'photo'   => $body['photo'] ?? null,
+                'design'  => $design,
             ],
         ], 201);
 
@@ -169,8 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             exit;
         }
 
-        // Devolver JSON (sin foto para ahorrar payload — el frontend la tiene en la tarjeta pública)
-        unset($card['photo']); // quitar foto del JSON general si es muy pesada
         jsonResponse($card);
 
     } catch (PDOException $e) {

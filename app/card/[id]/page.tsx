@@ -28,13 +28,24 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function CardPage({ params }: { params: { id: string } }) {
+export default async function CardPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { design?: string }
+}) {
   const card = await getCard(params.id)
   if (!card) notFound()
+
+  // Prefer design stored in DB; fall back to URL param for backwards-compat
+  const allowed = ['classic','dark','ocean','rose','gradient','minimal','split','glass']
+  const design = (allowed.includes(card.design ?? '') ? card.design : null)
+    ?? (allowed.includes(searchParams.design ?? '') ? searchParams.design : 'classic')
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const cardUrl = `${baseUrl}/card/${card.id}`
 
-  return <CardPageClient card={card} cardUrl={cardUrl} />
+  return <CardPageClient card={{ ...card, design: design as import('@/types/card').CardDesign }} cardUrl={cardUrl} />
 }
 

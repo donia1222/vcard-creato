@@ -3,14 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useI18n, LangSwitcher } from '@/components/I18nProvider'
 import QRDisplay from '@/components/QRDisplay'
+import CardPreview from '@/components/CardPreview'
 import type { CardData } from '@/types/card'
 
 export default function CardPageClient({ card, cardUrl }: { card: CardData; cardUrl: string }) {
   const { tr } = useI18n()
   const [showModal, setShowModal] = useState(false)
-
-  const initials = card.name
-    .split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
 
   useEffect(() => {
     const t = setTimeout(() => setShowModal(true), 3500)
@@ -42,59 +40,19 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
 
-          {/* Card */}
-          <div style={{
-            background: '#fff', borderRadius: 24, overflow: 'hidden',
-            boxShadow: '0 8px 40px rgba(15,29,44,0.10)', border: '1.5px solid #dfeefb',
-          }}>
-            <div style={{ height: 4, background: 'linear-gradient(90deg, #fe6c75, #f06069)' }} />
+          {/* Card — rendered with the chosen design */}
+          <CardPreview card={card} size="md" />
 
-            <div style={{ padding: '36px 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {/* Avatar / Photo */}
-              <div style={{ marginBottom: 20 }}>
-                {card.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={card.photo} alt={card.name}
-                    style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', border: '4px solid #fff', boxShadow: '0 4px 16px rgba(15,29,44,0.12)' }} />
-                ) : (
-                  <div style={{
-                    width: 88, height: 88, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #fe6c75, #f06069)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontSize: 32, fontWeight: 800,
-                    boxShadow: '0 4px 16px rgba(254,108,117,0.30)',
-                  }}>
-                    {initials}
-                  </div>
-                )}
-              </div>
-
-              <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0f1d2c', letterSpacing: '-0.02em', textAlign: 'center', marginBottom: 4 }}>
-                {card.name}
-              </h1>
-              {card.title && <p style={{ color: '#fe6c75', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{card.title}</p>}
-              {card.company && <p style={{ color: '#6b7d99', fontSize: 14 }}>{card.company}</p>}
-
-              <div style={{ width: '100%', height: 1, background: '#dfeefb', margin: '24px 0' }} />
-
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {card.email && <ContactLink href={`mailto:${card.email}`} icon="✉" text={card.email} />}
-                {card.phone && <ContactLink href={`tel:${card.phone}`} icon="☎" text={card.phone} />}
-                {card.website && <ContactLink href={card.website} icon="🌐" text={card.website} external />}
-                {card.address && <ContactRow icon="📍" text={card.address} />}
-              </div>
-
-              <a href={`/api/cards?id=${card.id}&action=vcf`} download
-                style={{
-                  marginTop: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  width: '100%', height: 52, background: '#fe6c75', color: '#fff',
-                  borderRadius: 1000, fontWeight: 700, fontSize: 15, textDecoration: 'none',
-                  boxShadow: '0 4px 20px rgba(254,108,117,0.30)',
-                }}>
-                ⬇ {tr('card.save')}
-              </a>
-            </div>
-          </div>
+          {/* Download VCF */}
+          <a href={`/api/cards?id=${card.id}&action=vcf`} download
+            style={{
+              marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', height: 52, background: '#fe6c75', color: '#fff',
+              borderRadius: 1000, fontWeight: 700, fontSize: 15, textDecoration: 'none',
+              boxShadow: '0 4px 20px rgba(254,108,117,0.30)',
+            }}>
+            ⬇ {tr('card.save')}
+          </a>
 
           {/* QR */}
           <div style={{ textAlign: 'center', marginTop: 28 }}>
@@ -182,27 +140,3 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
   )
 }
 
-function ContactLink({ href, icon, text, external }: { href: string; icon: string; text: string; external?: boolean }) {
-  return (
-    <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, color: '#424e65', textDecoration: 'none', padding: '8px 12px', borderRadius: 12 }}
-      onMouseOver={(e) => (e.currentTarget.style.background = '#f4f7fb')}
-      onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
-      <span style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: '#fff5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>
-        {icon}
-      </span>
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
-    </a>
-  )
-}
-
-function ContactRow({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, color: '#424e65', padding: '8px 12px' }}>
-      <span style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: '#fff5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>
-        {icon}
-      </span>
-      <span>{text}</span>
-    </div>
-  )
-}

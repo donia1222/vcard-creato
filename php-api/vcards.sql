@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `vcards` (
     `website`    VARCHAR(255)  DEFAULT NULL,
     `address`    VARCHAR(255)  DEFAULT NULL,
     `photo`      MEDIUMTEXT    DEFAULT NULL,
+    `design`     VARCHAR(30)   NOT NULL DEFAULT 'classic',
     `created_at` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_email`      (`email`),
