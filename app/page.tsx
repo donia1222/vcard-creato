@@ -144,7 +144,7 @@ export default function LandingPage() {
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24' }}/>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#4ade80' }}/>
                 <div style={{ flex: 1, marginLeft: 12, background: '#fff', borderRadius: 8, padding: '5px 14px', fontSize: 12, color: GRAY, border: `1px solid ${BORDER}` }}>
-                  vcard-creato.vercel.app
+                https://vcard.lweb.ch
                 </div>
               </div>
               {/* Card list */}
@@ -221,25 +221,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ TRUST BAR ══ */}
-      <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, padding: '28px 24px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48, flexWrap: 'wrap' }}>
-          {[
-            ['25.000+', tr('land.trust.cards'), true],
-            ['98.000+', tr('land.trust.scans'), false],
-            ['100%', tr('land.trust.free'), false],
-            ['5', tr('land.trust.langs'), false],
-          ].map(([val, label, accent], i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: i > 0 ? 48 : 0 }}>
-              {i > 0 && <div style={{ width: 1, height: 48, background: BORDER, marginRight: 48 }} />}
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 28, fontWeight: 800, color: accent ? CORAL : DARK, letterSpacing: '-0.02em' }}>{val}</p>
-                <p style={{ fontSize: 13, color: GRAY }}>{label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ══ 3 STEPS ══ */}
       <section style={{ background: '#fff', padding: '80px 24px' }}>
