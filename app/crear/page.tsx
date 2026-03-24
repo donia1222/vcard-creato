@@ -180,9 +180,9 @@ export default function CrearPage() {
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <a href="/" className="btn-secondary" style={{ height: 40, fontSize: 14, padding: '0 20px' }}>
-              {tr('land.back')}
-            </a>
+             <a href="/" style={{ fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em', textDecoration: 'none' }}>
+            VCard <span style={{ color: '#fe6c75' }}>Creator</span>
+          </a>
             {history.length > 0 && (
               <button onClick={() => setShowHistory(true)}
                 className="btn-secondary"
@@ -199,9 +199,7 @@ export default function CrearPage() {
               </button>
             )}
           </div>
-          <a href="/" style={{ fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em', textDecoration: 'none' }}>
-            VCard <span style={{ color: '#fe6c75' }}>Creator</span>
-          </a>
+    
         </div>
       </header>
 
@@ -555,47 +553,12 @@ export default function CrearPage() {
         )}
       </section>
 
-      {/* ── LWEB PROMO BANNER ── */}
-      <div style={{ background: '#f4f7fb', borderTop: '1px solid #dfeefb', padding: '20px 24px' }}>
-        <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            maxWidth: 680, margin: '0 auto',
-            background: '#fff', borderRadius: 16,
-            border: '1.5px solid #dfeefb', padding: '16px 22px',
-            textDecoration: 'none', gap: 16,
-            boxShadow: '0 4px 16px rgba(15,29,44,0.06)',
-            transition: 'box-shadow 200ms, border-color 200ms',
-          }}
-          onMouseOver={(e) => { e.currentTarget.style.borderColor = '#fe6c75'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(254,108,117,0.15)' }}
-          onMouseOut={(e) => { e.currentTarget.style.borderColor = '#dfeefb'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,29,44,0.06)' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logolweb.png" alt="Lweb" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontWeight: 800, fontSize: 14, color: '#0f1d2c', letterSpacing: '-0.01em', marginBottom: 1 }}>
-                Lweb.ch — App & Web Entwicklung
-              </p>
-              <p style={{ fontSize: 12, color: '#6b7d99', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {tr('lweb.tagline')}
-              </p>
-            </div>
-          </div>
-          <span style={{
-            flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fe6c75',
-            background: '#fff5f5', border: '1.5px solid #fecdd3',
-            borderRadius: 1000, padding: '5px 13px', whiteSpace: 'nowrap',
-          }}>
-            lweb.ch →
-          </span>
-        </a>
-      </div>
+
 
       {/* ── FOOTER ── */}
       <footer style={{ borderTop: '1px solid #dfeefb', background: '#f4f7fb', padding: '20px 24px 24px', textAlign: 'center' }}>
         <div style={{ marginBottom: 14 }}>
-          <LangSwitcher />
+
         </div>
         <p style={{ fontSize: 13, color: '#6b7d99', marginBottom: 10 }}>
           {tr('footer.made')}{' '}
