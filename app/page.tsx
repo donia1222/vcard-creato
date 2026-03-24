@@ -404,9 +404,12 @@ export default function LandingPage() {
                   </div>
                   <div style={{ background: '#fff', borderRadius: 28, overflow: 'hidden', minHeight: 480 }}>
                     <div style={{ background: `linear-gradient(135deg, ${CORAL} 0%, #f06069 100%)`, padding: '32px 20px 20px' }}>
-                      <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', border: '3px solid rgba(255,255,255,0.6)', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
-                        👤
-                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=144&h=144&fit=crop&crop=face&auto=format"
+                        alt="María García"
+                        style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.85)', marginBottom: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+                      />
                       <p style={{ color: '#fff', fontWeight: 800, fontSize: 18, marginBottom: 2 }}>María García</p>
                       <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>CEO · Empresa Digital SL</p>
                     </div>
@@ -485,7 +488,8 @@ export default function LandingPage() {
               boxShadow: '0 8px 32px rgba(15,29,44,0.12)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>MG</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=88&h=88&fit=crop&crop=face&auto=format" alt="María García" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 700, fontSize: 14, color: DARK }}>María García</p>
                   <p style={{ fontSize: 12, color: GRAY }}>CEO · Empresa Digital SL</p>

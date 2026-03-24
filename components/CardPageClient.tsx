@@ -23,11 +23,20 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
       <header style={{
         background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
         borderBottom: '1px solid #dfeefb', height: 60,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
       }}>
+        <a href="/" style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 14, fontWeight: 600, color: '#6b7d99', textDecoration: 'none',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          {tr('land.back')}
+        </a>
         <a href="/" style={{ fontWeight: 800, fontSize: 18, color: '#0f1d2c', letterSpacing: '-0.02em' }}>
           VCard <span style={{ color: '#fe6c75' }}>Creator</span>
         </a>
+        <div style={{ width: 80 }} />
       </header>
 
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
@@ -100,22 +109,6 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
             </div>
           </div>
 
-          {/* Trigger modal button */}
-          <button
-            onClick={() => setShowModal(true)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              width: '100%', marginTop: 20, height: 48,
-              background: '#fff5f5', border: '1.5px solid #fecdd3',
-              borderRadius: 1000, color: '#fe6c75', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 200ms',
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = '#fff5f5' }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            {tr('card.create')} VCard Creator
-          </button>
         </div>
       </main>
 

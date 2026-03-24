@@ -18,6 +18,29 @@ const EMPTY: FormState = {
   address: '', photo: '', design: 'classic',
 }
 
+// Demo Unsplash portraits shown when no photo uploaded
+const DEMO_PHOTOS: Record<string, string> = {
+  classic:  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face&auto=format',
+  dark:     'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face&auto=format',
+  ocean:    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face&auto=format',
+  rose:     'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face&auto=format',
+  gradient: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face&auto=format',
+  minimal:  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face&auto=format',
+  split:    'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=face&auto=format',
+  glass:    'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face&auto=format',
+}
+
+const DEMO_NAMES: Record<string, { name: string; title: string; company: string }> = {
+  classic:  { name: 'Thomas Müller', title: 'Product Manager', company: 'Acme GmbH' },
+  dark:     { name: 'Laura Becker',  title: 'UX Designer',     company: 'Studio Berlin' },
+  ocean:    { name: 'Jonas Weber',   title: 'Developer',       company: 'Tech AG' },
+  rose:     { name: 'Sofia Rossi',   title: 'Marketing Lead',  company: 'Brand Co.' },
+  gradient: { name: 'Marc Dupont',   title: 'Creative Dir.',   company: 'Agence Paris' },
+  minimal:  { name: 'Nina Schulz',   title: 'Architect',       company: 'Studio M' },
+  split:    { name: 'Carlos Ruiz',   title: 'Engineer',        company: 'Green Tech' },
+  glass:    { name: 'Emma Laurent',  title: 'Consultant',      company: 'Nexus Group' },
+}
+
 interface Result { id: string; url: string; card: CardData }
 
 interface HistoryEntry {
@@ -248,23 +271,24 @@ export default function CrearPage() {
                 {(['data', 'design'] as const).map((tab) => (
                   <button key={tab} type="button" onClick={() => setFormTab(tab)}
                     style={{
-                      flex: 1, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer',
-                      fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
+                      flex: 1, height: 46, borderRadius: 10, border: 'none', cursor: 'pointer',
+                      fontWeight: 700, fontSize: 16, fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       background: formTab === tab ? '#fff' : 'transparent',
                       color: formTab === tab ? '#0f1d2c' : '#6b7d99',
                       boxShadow: formTab === tab ? '0 1px 6px rgba(15,29,44,0.10)' : 'none',
                       transition: 'all 150ms',
                     }}>
                     {tab === 'data' ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
                         {tr('form.tab.data')}
-                      </span>
+                      </>
                     ) : (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
                         {tr('form.tab.design')}
-                      </span>
+                      </>
                     )}
                   </button>
                 ))}
@@ -331,7 +355,7 @@ export default function CrearPage() {
                       {tr('design.choose')}
                     </p>
                     <div className="design-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                      {(['classic', 'dark', 'ocean', 'rose'] as const).map((d) => {
+                      {(['classic', 'dark', 'ocean', 'rose', 'gradient', 'minimal', 'split', 'glass'] as const).map((d) => {
                         const selected = (form.design || 'classic') === d
                         return (
                           <button key={d} type="button"
@@ -354,9 +378,13 @@ export default function CrearPage() {
                             )}
                             <div style={{ pointerEvents: 'none', marginBottom: 8 }}>
                               <CardPreview
-                                card={{ ...form, design: d }}
+                                card={{
+                                  ...DEMO_NAMES[d],
+                                  design: d,
+                                  photo: DEMO_PHOTOS[d],
+                                }}
                                 size="sm"
-                                namePlaceholder={form.name || tr('preview.name')}
+                                namePlaceholder=""
                                 emptyPlaceholder=""
                               />
                             </div>
@@ -369,13 +397,18 @@ export default function CrearPage() {
                     </div>
                     <button type="button" onClick={() => setFormTab('data')}
                       style={{
-                        width: '100%', height: 44, marginTop: 18,
-                        background: '#f4f7fb', border: '1.5px solid #dfeefb',
-                        borderRadius: 1000, fontWeight: 700, fontSize: 14,
-                        color: '#424e65', cursor: 'pointer', fontFamily: 'inherit',
+                        width: '100%', height: 52, marginTop: 20,
+                        background: '#2563eb', border: 'none',
+                        borderRadius: 1000, fontWeight: 700, fontSize: 15,
+                        color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        boxShadow: '0 4px 20px rgba(37,99,235,0.30)',
                         transition: 'all 200ms',
-                      }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = '#1d4ed8'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
                       {tr('form.tab.data')}
                     </button>
                   </div>
@@ -387,10 +420,12 @@ export default function CrearPage() {
                   </div>
                 )}
 
-                <button type="submit" disabled={loading} className="btn-primary"
-                  style={{ width: '100%', height: 52, fontSize: 16 }}>
-                  {loading ? tr('form.submitting') : tr('form.submit')}
-                </button>
+                {formTab === 'data' && (
+                  <button type="submit" disabled={loading} className="btn-primary"
+                    style={{ width: '100%', height: 52, fontSize: 16 }}>
+                    {loading ? tr('form.submitting') : tr('form.submit')}
+                  </button>
+                )}
               </form>
             </div>
 
@@ -399,7 +434,11 @@ export default function CrearPage() {
               <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7d99', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {tr('preview.label')}
               </p>
-              <CardPreview card={form} namePlaceholder={tr('preview.name')} emptyPlaceholder={tr('preview.empty')} />
+              <CardPreview
+                card={form}
+                namePlaceholder={tr('preview.name')}
+                emptyPlaceholder={tr('preview.empty')}
+              />
               {form.design && form.design !== 'classic' && (
                 <div style={{ marginTop: 8, textAlign: 'center' }}>
                   <span style={{ fontSize: 11, color: '#fe6c75', fontWeight: 700, background: '#fff5f5', border: '1px solid #fecdd3', borderRadius: 100, padding: '3px 10px' }}>
@@ -476,6 +515,18 @@ export default function CrearPage() {
                   }}>
                   {copied ? tr('result.copied') : tr('result.copy')}
                 </button>
+                <a href={shareUrl} target="_blank" rel="noopener noreferrer"
+                  title={tr('result.open')}
+                  style={{
+                    height: 44, width: 44, flexShrink: 0, borderRadius: 10, border: '1.5px solid #dfeefb',
+                    background: '#fff', color: '#424e65', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    textDecoration: 'none', transition: 'all 200ms',
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = '#e8faf2'; e.currentTarget.style.borderColor = '#86efac'; e.currentTarget.style.color = '#16a34a' }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#dfeefb'; e.currentTarget.style.color = '#424e65' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
               </div>
             </div>
 
@@ -500,20 +551,6 @@ export default function CrearPage() {
                 style={{ width: '100%', height: 52, justifyContent: 'center', fontSize: 15, borderRadius: 1000 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 {tr('result.download')}
-              </a>
-
-              {/* Open card */}
-              <a href={shareUrl} target="_blank" rel="noopener noreferrer" style={{
-                width: '100%', height: 52,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                background: '#e8faf2', border: '1.5px solid #86efac',
-                color: '#16a34a', borderRadius: 1000,
-                fontWeight: 700, fontSize: 15, textDecoration: 'none', fontFamily: 'inherit', transition: 'all 200ms',
-              }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#d1fae5' }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#e8faf2' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                {tr('result.open')}
               </a>
 
               {/* New card */}
@@ -813,7 +850,7 @@ const inputStyle: React.CSSProperties = {
   border: '1.5px solid #dfeefb',
   borderRadius: 12,
   padding: '10px 14px',
-  fontSize: 15,
+  fontSize: 16,
   color: '#0f1d2c',
   fontFamily: 'inherit',
   transition: 'border-color 200ms, box-shadow 200ms',

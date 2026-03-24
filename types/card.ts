@@ -1,4 +1,4 @@
-export type CardDesign = 'classic' | 'dark' | 'ocean' | 'rose'
+export type CardDesign = 'classic' | 'dark' | 'ocean' | 'rose' | 'gradient' | 'minimal' | 'split' | 'glass'
 
 export interface CardData {
   id: string
