@@ -456,30 +456,14 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="social-grid">
           {/* Photo */}
           <div style={{ borderRadius: 24, overflow: 'hidden', boxShadow: '0 24px 64px rgba(15,29,44,0.12)', position: 'relative' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80&auto=format&fit=crop"
-              alt="professionals sharing digital business cards"
+            <video
+              src="/sora-video-1774223926866.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
               style={{ width: '100%', height: 400, objectFit: 'cover', display: 'block' }}
             />
-            <div style={{
-              position: 'absolute', bottom: 20, left: 20, right: 20,
-              background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
-              borderRadius: 16, padding: '16px 20px', border: `1.5px solid ${BORDER}`,
-              boxShadow: '0 8px 32px rgba(15,29,44,0.12)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=88&h=88&fit=crop&crop=face&auto=format" alt="María García" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: DARK }}>María García</p>
-                  <p style={{ fontSize: 12, color: GRAY }}>CEO · Empresa Digital SL</p>
-                </div>
-                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 100, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#16a34a' }}>
-                  {tr('land.mockup.shared')}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Reviews right */}
