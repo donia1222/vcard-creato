@@ -5,6 +5,7 @@ import CardPreview from '@/components/CardPreview'
 import QRDisplay from '@/components/QRDisplay'
 import { useI18n, LangSwitcher } from '@/components/I18nProvider'
 import type { CardData, CardDesign } from '@/types/card'
+import { PHP_API, cardApi, vcfUrl, errorKey, reducirFoto } from '@/lib/api'
 
 interface FormState {
   name: string; company: string; title: string
@@ -41,7 +42,7 @@ const DEMO_NAMES: Record<string, { name: string; title: string; company: string 
   glass:    { name: 'Emma Laurent',  title: 'Consultant',      company: 'Nexus Group' },
 }
 
-interface Result { id: string; url: string; card: CardData }
+interface Result { id: string; url: string; card: CardData; editToken?: string }
 
 interface HistoryEntry {
   id: string
@@ -50,6 +51,7 @@ interface HistoryEntry {
   company?: string
   title?: string
   createdAt: string
+  editToken?: string   // clave privada para editar/borrar (solo en este navegador)
 }
 
 const LS_KEY = 'vcard_history'
@@ -60,15 +62,17 @@ function loadHistory(): HistoryEntry[] {
   } catch { return [] }
 }
 
-function saveToHistory(result: Result) {
+function saveToHistory(result: Result, editToken?: string) {
   const entries = loadHistory()
+  const prev = entries.find((e) => e.id === result.id)
   const entry: HistoryEntry = {
+    editToken: editToken || result.editToken || prev?.editToken,
     id: result.id,
     url: result.url,
     name: result.card.name,
     company: result.card.company,
     title: result.card.title,
-    createdAt: new Date().toISOString(),
+    createdAt: prev?.createdAt || new Date().toISOString(),
   }
   const filtered = entries.filter((e) => e.id !== entry.id)
   localStorage.setItem(LS_KEY, JSON.stringify([entry, ...filtered].slice(0, 50)))
@@ -86,8 +90,11 @@ export default function CrearPage() {
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [formTab, setFormTab] = useState<'data' | 'design'>('data')
+  const [editing, setEditing] = useState<HistoryEntry | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const { tr } = useI18n()
+  const { tr, lang } = useI18n()
 
   useEffect(() => {
     setHistory(loadHistory())
@@ -96,12 +103,16 @@ export default function CrearPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
 
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    e.target.value = ''
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setForm((p) => ({ ...p, photo: reader.result as string }))
-    reader.readAsDataURL(file)
+    try {
+      const photo = await reducirFoto(file)
+      setForm((p) => ({ ...p, photo }))
+    } catch {
+      setError(tr('form.error.photo'))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,18 +121,20 @@ export default function CrearPage() {
     if (!form.name.trim()) { setError(tr('form.error.name')); return }
     setLoading(true)
     try {
-      const res = await fetch('/api/cards', {
-        method: 'POST',
+      const res = await fetch(editing ? cardApi(editing.id) : PHP_API, {
+        method: editing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(editing ? { ...form, editToken: editing.editToken } : form),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al crear la tarjeta')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) { setError(tr(errorKey(res.status, data.error))); return }
       setResult(data)
-      saveToHistory(data)
+      saveToHistory(data, editing?.editToken)
       setHistory(loadHistory())
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setNotice(editing ? tr('result.updated') : '')
+      setEditing(null)
+    } catch {
+      setError(tr('form.error.generic'))
     } finally {
       setLoading(false)
     }
@@ -155,10 +168,41 @@ export default function CrearPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const handleDeleteHistory = (id: string) => {
+  const quitarDelHistorial = (id: string) => {
     const updated = loadHistory().filter((e) => e.id !== id)
     localStorage.setItem(LS_KEY, JSON.stringify(updated))
     setHistory(updated)
+  }
+
+  // Borrar: si este navegador tiene la clave, se borra también del servidor (dos toques: «¿Seguro?»).
+  const handleDeleteHistory = async (entry: HistoryEntry) => {
+    if (pendingDelete !== entry.id) { setPendingDelete(entry.id); return }
+    setPendingDelete(null)
+    if (entry.editToken) {
+      try {
+        const res = await fetch(cardApi(entry.id), { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ editToken: entry.editToken }) })
+        if (!res.ok && res.status !== 404) { setNotice(tr('form.error.generic')); return }
+      } catch { setNotice(tr('form.error.generic')); return }
+    }
+    quitarDelHistorial(entry.id)
+    if (result?.id === entry.id) { setResult(null); setForm(EMPTY) }
+    setNotice(tr('history.deleted'))
+  }
+
+  // Editar: carga la tarjeta del servidor en el formulario
+  const handleEdit = async (entry: HistoryEntry) => {
+    try {
+      const res = await fetch(cardApi(entry.id))
+      if (!res.ok) { setNotice(tr(res.status === 404 ? 'history.gone' : 'form.error.generic')); return }
+      const c: CardData = await res.json()
+      setForm({
+        name: c.name || '', company: c.company || '', title: c.title || '', phone: c.phone || '',
+        email: c.email || '', website: c.website || '', address: c.address || '', photo: c.photo || '',
+        design: (c.design as CardDesign) || 'classic',
+      })
+      setEditing(entry); setResult(null); setShowHistory(false); setFormTab('data'); setError(''); setNotice('')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch { setNotice(tr('form.error.generic')) }
   }
 
   const handleClearHistory = () => {
@@ -180,9 +224,10 @@ export default function CrearPage() {
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-             <a href="/" style={{ fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em', textDecoration: 'none' }}>
-            VCard <span style={{ color: '#fe6c75' }}>Creator</span>
-          </a>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, fontWeight: 800, fontSize: 20, color: '#0f1d2c', letterSpacing: '-0.02em', textDecoration: 'none' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/logo-vcard.png" alt="" width={30} height={30} style={{ borderRadius: 8, display: 'block' }} />
+              <span>VCard <span style={{ color: '#fe6c75' }}>Creator</span></span>
+            </a>
             {history.length > 0 && (
               <button onClick={() => setShowHistory(true)}
                 className="btn-secondary"
@@ -199,35 +244,24 @@ export default function CrearPage() {
               </button>
             )}
           </div>
-    
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" className="hide-sm" style={{ fontSize: 13, fontWeight: 700, color: '#a8b8cc', textDecoration: 'none' }}>
+              {tr('header.by')} <span style={{ color: '#fe6c75' }}>Lweb</span>
+            </a>
+            <span className="hide-sm"><LangSwitcher /></span>
+          </div>
         </div>
       </header>
 
 
-      {/* ── AD SLOT TOP ── */}
-      {process.env.NODE_ENV === 'development' ? (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '16px 24px 0' }}>
-          <div style={{
-            background: '#f4f7fb', border: '2px dashed #c8d5e3',
-            borderRadius: 12, height: 90,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#a8b8cc', fontSize: 12, fontWeight: 600, gap: 8,
-          }}>
-            📢 Google Ad — 728×90 (solo visible en desarrollo)
+      {/* aviso (borrada, actualizada, error) */}
+      {notice && (
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 24px 0' }}>
+          <div role="status" onClick={() => setNotice('')} style={{ background: '#f4f7fb', border: '1.5px solid #dfeefb', borderRadius: 14, padding: '12px 16px', fontSize: 14, color: '#424e65', fontWeight: 600, cursor: 'pointer' }}>
+            {notice}
           </div>
         </div>
-      ) : (process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '16px 24px 0' }}>
-          <ins
-            className="adsbygoogle"
-            style={{ display: 'block' }}
-            data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT}
-            data-ad-slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT || '0000000000'}
-            data-ad-format="auto"
-            data-full-width-responsive="true"
-          />
-        </div>
-      ))}
+      )}
 
       {/* ── FORM / RESULT ── */}
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
@@ -244,7 +278,7 @@ export default function CrearPage() {
               boxShadow: '0 4px 24px rgba(15,29,44,0.06)',
             }}>
               <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f1d2c', marginBottom: 20, letterSpacing: '-0.01em' }}>
-                {tr('form.title')}
+                {editing ? tr('edit.title') : tr('form.title')}
               </h2>
 
               {/* ── TABS ── */}
@@ -325,7 +359,7 @@ export default function CrearPage() {
                     <Field label={tr('form.email')} name="email" value={form.email} onChange={handleChange} placeholder={tr('form.email.ph')} type="email" />
                   </div>
 
-                  <Field label={tr('form.website')} name="website" value={form.website} onChange={handleChange} placeholder={tr('form.website.ph')} type="url" />
+                  <Field label={tr('form.website')} name="website" value={form.website} onChange={handleChange} placeholder={tr('form.website.ph')} type="text" />
                   <Field label={tr('form.address')} name="address" value={form.address} onChange={handleChange} placeholder={tr('form.address.ph')} />
                 </>)}
 
@@ -404,7 +438,7 @@ export default function CrearPage() {
                 {formTab === 'data' && (
                   <button type="submit" disabled={loading} className="btn-primary"
                     style={{ width: '100%', height: 52, fontSize: 16 }}>
-                    {loading ? tr('form.submitting') : tr('form.submit')}
+                    {loading ? tr('form.submitting') : editing ? tr('edit.save') : tr('form.submit')}
                   </button>
                 )}
               </form>
@@ -528,14 +562,14 @@ export default function CrearPage() {
               </button>
 
               {/* Download .vcf */}
-              <a href={`/api/cards?id=${result.id}&action=vcf`} download className="btn-primary"
+              <a href={vcfUrl(result.id)} download className="btn-primary"
                 style={{ width: '100%', height: 52, justifyContent: 'center', fontSize: 15, borderRadius: 1000 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 {tr('result.download')}
               </a>
 
               {/* New card */}
-              <button onClick={() => { setResult(null); setForm(EMPTY) }} style={{
+              <button onClick={() => { setResult(null); setForm(EMPTY); setEditing(null); setNotice('') }} style={{
                 width: '100%', height: 48,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 background: '#f4f7fb', border: '1.5px solid #dfeefb',
@@ -645,7 +679,7 @@ export default function CrearPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {history.map((entry) => {
                     const initials = entry.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
-                    const date = new Date(entry.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+                    const date = new Date(entry.createdAt).toLocaleDateString(lang === 'de' ? 'de-CH' : lang, { day: '2-digit', month: 'short', year: 'numeric' })
                     return (
                       <div key={entry.id} style={{
                         display: 'flex', alignItems: 'center', gap: 12,
@@ -690,15 +724,26 @@ export default function CrearPage() {
                             }}>
                             ↗
                           </a>
+                          {entry.editToken && (
+                            <button onClick={() => handleEdit(entry)} title={tr('history.edit')}
+                              style={{
+                                height: 32, padding: '0 10px', borderRadius: 8,
+                                border: '1.5px solid #dfeefb', background: '#fff',
+                                color: '#424e65', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                              }}>
+                              ✎ {tr('history.edit')}
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleDeleteHistory(entry.id)}
+                            onClick={() => handleDeleteHistory(entry)}
+                            title={tr('history.delete')}
                             style={{
-                              height: 32, width: 32, borderRadius: 8,
-                              border: '1.5px solid #fecdd3', background: '#fff5f5',
-                              color: '#fe6c75', fontSize: 13, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              height: 32, minWidth: 32, padding: pendingDelete === entry.id ? '0 10px' : 0, borderRadius: 8,
+                              border: '1.5px solid #fecdd3', background: pendingDelete === entry.id ? '#fe6c75' : '#fff5f5',
+                              color: pendingDelete === entry.id ? '#fff' : '#fe6c75', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
                             }}>
-                            ✕
+                            {pendingDelete === entry.id ? tr('history.confirm') : '✕'}
                           </button>
                         </div>
                       </div>

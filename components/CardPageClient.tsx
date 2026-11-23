@@ -4,6 +4,7 @@ import { useI18n } from '@/components/I18nProvider'
 import QRDisplay from '@/components/QRDisplay'
 import CardPreview from '@/components/CardPreview'
 import type { CardData } from '@/types/card'
+import { vcfUrl } from '@/lib/api'
 
 export default function CardPageClient({ card, cardUrl }: { card: CardData; cardUrl: string }) {
   const { tr } = useI18n()
@@ -24,10 +25,13 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           {tr('land.back')}
         </a>
-        <a href="/" style={{ fontWeight: 800, fontSize: 18, color: '#0f1d2c', letterSpacing: '-0.02em' }}>
-          VCard <span style={{ color: '#fe6c75' }}>Creator</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 18, color: '#0f1d2c', letterSpacing: '-0.02em', textDecoration: 'none' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/logo-vcard.png" alt="" width={28} height={28} style={{ borderRadius: 7, display: 'block' }} />
+          <span>VCard <span style={{ color: '#fe6c75' }}>Creator</span></span>
         </a>
-        <div style={{ width: 80 }} />
+        <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ width: 80, textAlign: 'right', fontSize: 12, fontWeight: 700, color: '#a8b8cc', textDecoration: 'none' }}>
+          {tr('header.by')} <span style={{ color: '#fe6c75' }}>Lweb</span>
+        </a>
       </header>
 
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
@@ -37,7 +41,7 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
           <CardPreview card={card} size="md" />
 
           {/* Download VCF */}
-          <a href={`/api/cards?id=${card.id}&action=vcf`} download
+          <a href={vcfUrl(card.id)} download
             style={{
               marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               width: '100%', height: 52, background: '#fe6c75', color: '#fff',
@@ -59,6 +63,18 @@ export default function CardPageClient({ card, cardUrl }: { card: CardData; card
               <QRDisplay url={cardUrl} size={148} showDownload filename={card.name.replace(/\s+/g, '_')} />
             </div>
           </div>
+
+          {/* Eigene Karte */}
+          <a href="/crear" style={{
+            marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            width: '100%', height: 48, background: '#fff', color: '#424e65', border: '1.5px solid #dfeefb',
+            borderRadius: 1000, fontWeight: 600, fontSize: 14, textDecoration: 'none',
+          }}>
+            ✦ {tr('card.own')}
+          </a>
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#a8b8cc', marginTop: 12 }}>
+            {tr('card.free')} · <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" style={{ color: '#fe6c75', fontWeight: 600, textDecoration: 'none' }}>Lweb · Rheintal</a>
+          </p>
 
         </div>
       </main>

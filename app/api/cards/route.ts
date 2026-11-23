@@ -1,66 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { cardApi } from '@/lib/api'
 
-const PHP_API = 'https://web.lweb.ch/vcard/api/cards.php'
-
-export async function POST(req: NextRequest) {
-  let text = ''
-  try {
-    const body = await req.json()
-
-    const res = await fetch(PHP_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-
-    text = await res.text()
-
-    // Strip possible BOM or whitespace before JSON
-    const clean = text.trim().replace(/^\uFEFF/, '')
-    const data = JSON.parse(clean)
-    return NextResponse.json(data, { status: res.status })
-
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    // Return the raw PHP response so we can see what went wrong
-    return NextResponse.json(
-      { error: msg, php_url: PHP_API, raw: text.slice(0, 1000) },
-      { status: 500 }
-    )
-  }
-}
-
+// Solo lectura, por compatibilidad con enlaces antiguos (/api/cards?id=…&action=vcf).
+// Crear, editar y borrar van directos del navegador a la API PHP (ver lib/api.ts).
 export async function GET(req: NextRequest) {
-  let text = ''
+  const id = req.nextUrl.searchParams.get('id') || ''
+  if (!/^[a-f0-9]{12}$/.test(id)) return NextResponse.json({ error: 'id_invalid' }, { status: 400 })
+  const vcf = req.nextUrl.searchParams.get('action') === 'vcf'
   try {
-    const id = req.nextUrl.searchParams.get('id')
-    const action = req.nextUrl.searchParams.get('action')
-    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
-
-    const url = `${PHP_API}?id=${encodeURIComponent(id)}${action ? `&action=${action}` : ''}`
-    const res = await fetch(url, { cache: 'no-store' })
-
-    if (action === 'vcf') {
-      const blob = await res.blob()
-      return new NextResponse(blob, {
-        status: res.status,
+    const res = await fetch(cardApi(id) + (vcf ? '&action=vcf' : ''), { cache: 'no-store' })
+    if (vcf && res.ok) {
+      return new NextResponse(await res.arrayBuffer(), {
+        status: 200,
         headers: {
           'Content-Type': 'text/vcard; charset=utf-8',
-          'Content-Disposition': res.headers.get('Content-Disposition') || 'attachment; filename="tarjeta.vcf"',
+          'Content-Disposition': res.headers.get('Content-Disposition') || 'attachment; filename="kontakt.vcf"',
         },
       })
     }
-
-    text = await res.text()
-    const clean = text.trim().replace(/^\uFEFF/, '')
-    const data = JSON.parse(clean)
+    const data = await res.json().catch(() => ({ error: 'server_error' }))
     return NextResponse.json(data, { status: res.status })
-
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return NextResponse.json(
-      { error: msg, php_url: PHP_API, raw: text.slice(0, 1000) },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json({ error: 'server_error' }, { status: 502 })
   }
 }

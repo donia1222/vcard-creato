@@ -115,13 +115,14 @@ input:focus {
   .hero-grid > div:last-child { display: none !important; }
   .steps-grid { grid-template-columns: 1fr !important; }
   .features-grid { grid-template-columns: 1fr 1fr !important; }
-  .reviews-grid { grid-template-columns: 1fr !important; }
+  .use-grid { grid-template-columns: 1fr 1fr 1fr !important; gap: 14px !important; }
   .showcase-grid { grid-template-columns: 1fr !important; }
   .social-grid { grid-template-columns: 1fr !important; }
   .footer-grid { grid-template-columns: 1fr 1fr !important; }
 }
 @media (max-width: 600px) {
   .features-grid { grid-template-columns: 1fr !important; }
+  .use-grid { grid-template-columns: 1fr !important; }
   .footer-grid { grid-template-columns: 1fr !important; }
 }
 
@@ -132,3 +133,6 @@ input:focus {
   .how-grid { grid-template-columns: 1fr !important; }
   .design-grid { grid-template-columns: 1fr !important; }
 }
+
+/* Lweb 23/11/2026: lo secundario de la cabecera se esconde en el móvil */
+@media (max-width: 640px) { .hide-sm { display: none !important; } }

@@ -9,55 +9,9 @@ const GRAY  = '#6b7d99'
 const LIGHT = '#f4f7fb'
 const BORDER= '#dfeefb'
 
-/* ── REVIEWS per language ── */
-const REVIEWS: Record<string, { name: string; location: string; text: string }[]> = {
-  de: [
-    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Ich habe meine Karte in weniger als einer Minute erstellt. Der QR-Code funktionierte beim Event perfekt und die Leute konnten meinen Kontakt sofort speichern.' },
-    { name: 'Anna S.', location: 'Zürich, CH', text: 'Ohne Registrierung eine professionelle digitale Visitenkarte erstellt. Einfach, schnell und der QR-Code funktioniert einwandfrei.' },
-    { name: 'Sophie L.', location: 'Paris, FR', text: 'Sehr praktisch! Ich habe meine Karte per QR auf einer Messe geteilt und alle konnten sie direkt speichern.' },
-    { name: 'Marco R.', location: 'Milano, IT', text: 'In 30 Sekunden erstellt. Der permanente Link funktioniert perfekt und ich kann ihn auf LinkedIn teilen.' },
-    { name: 'Laura K.', location: 'Berlin, DE', text: 'Einfach genial. Kein Registrieren, kein Installieren. QR-Code drucken, fertig. Meine Kunden sind begeistert.' },
-    { name: 'James T.', location: 'London, UK', text: 'Die permanente URL ist großartig. Ich habe den QR auf meine Verpackung gedruckt und Kunden können meinen Kontakt sofort speichern.' },
-  ],
-  en: [
-    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Created my card in less than a minute. The QR worked perfectly at the event and people could save my contact instantly.' },
-    { name: 'Anna S.', location: 'Zürich, CH', text: 'Created a professional digital business card without registering. Simple, fast and the QR code works perfectly.' },
-    { name: 'Sophie L.', location: 'Paris, FR', text: 'Super handy! I shared my card via QR at a trade show and everyone could save it directly.' },
-    { name: 'Marco R.', location: 'Milano, IT', text: 'Created in 30 seconds. The permanent link works perfectly and I can share it on LinkedIn.' },
-    { name: 'Laura K.', location: 'Berlin, DE', text: 'Simply brilliant. No registering, no installing. Print the QR code, done. My clients love it.' },
-    { name: 'James T.', location: 'London, UK', text: 'The permanent URL is brilliant. I printed the QR on my packaging and clients can save my contact instantly. No app needed.' },
-  ],
-  es: [
-    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Creé mi tarjeta en menos de un minuto. El QR funcionó perfecto en el evento y la gente pudo guardar mi contacto al instante.' },
-    { name: 'Anna S.', location: 'Zürich, CH', text: 'Creé una tarjeta de visita digital profesional sin registrarme. Sencillo, rápido y el código QR funciona perfectamente.' },
-    { name: 'Sophie L.', location: 'Paris, FR', text: 'Muy práctico. Compartí mi tarjeta con QR en un salón profesional y todos pudieron guardarla directamente.' },
-    { name: 'Marco R.', location: 'Milano, IT', text: 'Creada en 30 segundos. El enlace permanente funciona perfecto y puedo compartirlo en LinkedIn.' },
-    { name: 'Laura K.', location: 'Berlin, DE', text: 'Sencillamente genial. Sin registro, sin instalación. Imprimo el QR y listo. Mis clientes están encantados.' },
-    { name: 'James T.', location: 'London, UK', text: 'La URL permanente es brillante. Imprimí el QR en mi packaging y los clientes guardan mi contacto al instante.' },
-  ],
-  fr: [
-    { name: 'Carlos M.', location: 'Madrid, ES', text: 'J\'ai créé ma carte en moins d\'une minute. Le QR a parfaitement fonctionné à l\'événement et les gens ont pu enregistrer mon contact instantanément.' },
-    { name: 'Anna S.', location: 'Zürich, CH', text: 'Carte de visite numérique professionnelle créée sans inscription. Simple, rapide et le QR code fonctionne parfaitement.' },
-    { name: 'Sophie L.', location: 'Paris, FR', text: 'Super pratique ! J\'ai partagé ma carte via QR lors d\'un salon et tout le monde a pu l\'enregistrer directement.' },
-    { name: 'Marco R.', location: 'Milano, IT', text: 'Créé en 30 secondes. Le lien permanent fonctionne parfaitement et je peux le partager sur LinkedIn.' },
-    { name: 'Laura K.', location: 'Berlin, DE', text: 'Tout simplement génial. Pas d\'inscription, pas d\'installation. Imprimer le QR, c\'est fait. Mes clients adorent.' },
-    { name: 'James T.', location: 'London, UK', text: 'L\'URL permanente est brillante. J\'ai imprimé le QR sur mon emballage et les clients peuvent enregistrer mon contact instantanément.' },
-  ],
-  it: [
-    { name: 'Carlos M.', location: 'Madrid, ES', text: 'Ho creato il mio biglietto in meno di un minuto. Il QR ha funzionato perfettamente all\'evento e le persone hanno potuto salvare il mio contatto all\'istante.' },
-    { name: 'Anna S.', location: 'Zürich, CH', text: 'Ho creato un biglietto da visita digitale professionale senza registrarmi. Semplice, veloce e il QR funziona perfettamente.' },
-    { name: 'Sophie L.', location: 'Paris, FR', text: 'Molto pratico! Ho condiviso il mio biglietto via QR a una fiera e tutti hanno potuto salvarlo direttamente.' },
-    { name: 'Marco R.', location: 'Milano, IT', text: 'Creato in 30 secondi. Il link permanente funziona perfettamente e posso condividerlo su LinkedIn.' },
-    { name: 'Laura K.', location: 'Berlin, DE', text: 'Semplicemente geniale. Nessuna registrazione, nessuna installazione. Stampa il QR, fatto. I miei clienti sono entusiasti.' },
-    { name: 'James T.', location: 'London, UK', text: 'L\'URL permanente è fantastico. Ho stampato il QR sulla mia confezione e i clienti possono salvare il mio contatto all\'istante.' },
-  ],
-}
-
 export default function LandingPage() {
-  const { tr, lang } = useI18n()
+  const { tr } = useI18n()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-
-  const reviews = REVIEWS[lang] || REVIEWS['es']
 
   const faqItems = Array.from({ length: 7 }, (_, i) => ({
     q: tr(`land.faq.q${i + 1}`),
@@ -77,12 +31,19 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 800, fontSize: 22, color: DARK, letterSpacing: '-0.03em' }}>
-            VCard <span style={{ color: CORAL }}>Creator</span>
-          </span>
-          <a href="/crear" className="btn-primary" style={{ height: 44, fontSize: 15, padding: '0 24px' }}>
-            {tr('land.header.cta')}
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 800, fontSize: 22, color: DARK, letterSpacing: '-0.03em', textDecoration: 'none' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/logo-vcard.png" alt="" width={34} height={34} style={{ borderRadius: 9, display: 'block' }} />
+            <span>VCard <span style={{ color: CORAL }}>Creator</span></span>
           </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" className="hide-sm" style={{ fontSize: 13, fontWeight: 700, color: '#a8b8cc', textDecoration: 'none' }}>
+              {tr('header.by')} <span style={{ color: CORAL }}>Lweb</span>
+            </a>
+            <span className="hide-sm"><LangSwitcher /></span>
+            <a href="/crear" className="btn-primary" style={{ height: 44, fontSize: 15, padding: '0 24px' }}>
+              {tr('land.header.cta')}
+            </a>
+          </div>
         </div>
       </header>
 
@@ -117,17 +78,11 @@ export default function LandingPage() {
               </a>
             </div>
 
-            {/* Mini trust */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ display: 'flex' }}>
-                {['32','12','25','48','60'].map((n, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={`https://i.pravatar.cc/36?img=${n}`} alt="user"
-                    style={{ width: 36, height: 36, borderRadius: '50%', border: '2.5px solid #fff', marginLeft: i === 0 ? 0 : -10, objectFit: 'cover' }} />
-                ))}
-              </div>
-              <p style={{ fontSize: 13, color: GRAY }}>{tr('land.hero.trust')}</p>
-            </div>
+            {/* Mini trust: solo lo que es verdad */}
+            <p style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: GRAY, fontWeight: 600 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              {tr('land.hero.trust')}
+            </p>
           </div>
 
           {/* Right: Dashboard mockup */}
@@ -144,7 +99,7 @@ export default function LandingPage() {
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24' }}/>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#4ade80' }}/>
                 <div style={{ flex: 1, marginLeft: 12, background: '#fff', borderRadius: 8, padding: '5px 14px', fontSize: 12, color: GRAY, border: `1px solid ${BORDER}` }}>
-                https://vcard.lweb.ch
+                vcard-creato.vercel.app
                 </div>
               </div>
               {/* Card list */}
@@ -153,9 +108,9 @@ export default function LandingPage() {
                   {tr('land.mockup.recent')}
                 </p>
                 {[
-                  { name: 'María García', role: 'CEO · Empresa SL', scans: '2.3K', color: '#fff5f5' },
-                  { name: 'Carlos Pérez', role: 'Developer · Freelance', scans: '1.1K', color: '#f0fdf4' },
-                  { name: 'Anna Müller', role: 'Designer · Studio', scans: '890', color: '#eff6ff' },
+                  { name: 'María García', role: 'CEO · Empresa SL', color: '#fff5f5' },
+                  { name: 'Carlos Pérez', role: 'Developer · Freelance', color: '#f0fdf4' },
+                  { name: 'Anna Müller', role: 'Designer · Studio', color: '#eff6ff' },
                 ].map((card, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: 12,
@@ -178,7 +133,6 @@ export default function LandingPage() {
                       <span style={{ fontSize: 10, fontWeight: 700, color: CORAL, background: '#fff5f5', border: `1px solid #fecdd3`, borderRadius: 100, padding: '2px 8px' }}>
                         vCard
                       </span>
-                      <p style={{ fontSize: 11, color: GRAY, marginTop: 3 }}>{card.scans} {tr('land.mockup.scans')}</p>
                     </div>
                   </div>
                 ))}
@@ -186,9 +140,9 @@ export default function LandingPage() {
               {/* Stats row */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, borderTop: `1px solid ${BORDER}`, margin: '8px 0 0' }}>
                 {[
-                  ['25K+', tr('land.mockup.cards')],
-                  ['98K', tr('land.mockup.scans')],
-                  ['4.9★', tr('land.mockup.rating')],
+                  ['QR', tr('land.mockup.s1')],
+                  ['.vcf', tr('land.mockup.s2')],
+                  ['CHF 0', tr('land.mockup.s3')],
                 ].map(([val, label], i) => (
                   <div key={i} style={{ padding: '14px 0', textAlign: 'center', borderRight: i < 2 ? `1px solid ${BORDER}` : 'none' }}>
                     <p style={{ fontWeight: 800, fontSize: 18, color: i === 0 ? CORAL : DARK }}>{val}</p>
@@ -200,7 +154,7 @@ export default function LandingPage() {
 
             {/* Floating QR card */}
             <div style={{
-              position: 'absolute', bottom: -20, right: -20,
+              position: 'absolute', top: -22, right: -18,
               background: '#fff', borderRadius: 16,
               border: `1.5px solid ${BORDER}`,
               boxShadow: '0 12px 32px rgba(15,29,44,0.12)',
@@ -302,7 +256,7 @@ export default function LandingPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ background: LIGHT, borderRadius: 10, padding: '8px 12px', border: `1.5px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12 }}>🔗</span>
-                    <span style={{ fontSize: 11, color: GRAY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>vcard.lweb.ch/card/...</span>
+                    <span style={{ fontSize: 11, color: GRAY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>vcard-creato.vercel.app/card/...</span>
                     <span style={{ fontSize: 10, fontWeight: 700, color: CORAL, background: '#fff5f5', border: `1px solid #fecdd3`, borderRadius: 100, padding: '2px 8px', flexShrink: 0 }}>{tr('result.copy')}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -341,6 +295,34 @@ export default function LandingPage() {
             <a href="/crear" className="btn-primary" style={{ fontSize: 16, height: 56, padding: '0 40px' }}>
               {tr('land.hero.cta')}
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ IM ALLTAG: tres fotos (generadas con IA, sin texto en pantalla) ══ */}
+      <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 12 }}>
+              {tr('land.use.title')}
+            </h2>
+            <p style={{ fontSize: 17, color: GRAY, maxWidth: 620, margin: '0 auto' }}>{tr('land.use.subtitle')}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="use-grid">
+            {[
+              { img: '/fotos/3-tienda.webp', t: 'land.use.1.t', d: 'land.use.1.d' },
+              { img: '/fotos/1-mano.webp', t: 'land.use.2.t', d: 'land.use.2.d' },
+              { img: '/fotos/4-escritorio.webp', t: 'land.use.3.t', d: 'land.use.3.d' },
+            ].map((u) => (
+              <figure key={u.img} style={{ margin: 0, background: '#fff', borderRadius: 22, border: `1.5px solid ${BORDER}`, overflow: 'hidden' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={u.img} alt="" loading="lazy" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', display: 'block' }} />
+                <figcaption style={{ padding: '18px 20px 22px' }}>
+                  <p style={{ fontWeight: 800, fontSize: 17, color: DARK, marginBottom: 6, letterSpacing: '-0.01em' }}>{tr(u.t)}</p>
+                  <p style={{ fontSize: 14, color: GRAY, lineHeight: 1.6 }}>{tr(u.d)}</p>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
@@ -451,76 +433,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ SOCIAL PROOF WITH PHOTO ══ */}
+      {/* ══ EIN PROJEKT VON LWEB (antes: reseñas inventadas) ══ */}
       <section style={{ background: LIGHT, borderTop: `1px solid ${BORDER}`, padding: '80px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="social-grid">
-          {/* Photo */}
           <div style={{ borderRadius: 24, overflow: 'hidden', boxShadow: '0 24px 64px rgba(15,29,44,0.12)', position: 'relative' }}>
-            <video
-              src="/sora-video-1774223926866.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{ width: '100%', height: 400, objectFit: 'cover', display: 'block' }}
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/fotos/2-evento.webp" alt="" loading="lazy" style={{ width: '100%', height: 420, objectFit: 'cover', display: 'block' }} />
           </div>
-
-          {/* Reviews right */}
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff5f5', border: `1.5px solid #fecdd3`, color: CORAL, fontSize: 13, fontWeight: 700, padding: '6px 14px', borderRadius: 1000, marginBottom: 20 }}>
-              {tr('land.social.badge')}
+              {tr('land.lweb.badge')}
             </div>
-            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 8 }}>
-              {tr('land.social.title')}
+            <h2 style={{ fontSize: 'clamp(26px, 3.2vw, 40px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 14 }}>
+              {tr('land.lweb.title')}
             </h2>
-            <p style={{ fontSize: 16, color: GRAY, marginBottom: 32 }}>{tr('land.social.subtitle')}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {reviews.slice(0, 3).map((r, i) => (
-                <div key={i} style={{ background: '#fff', borderRadius: 16, border: `1.5px solid ${BORDER}`, padding: '16px 20px', boxShadow: '0 2px 12px rgba(15,29,44,0.05)' }}>
-                  <p style={{ fontSize: 13, color: DARK, lineHeight: 1.6, marginBottom: 12 }}>"{r.text}"</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 11, flexShrink: 0 }}>
-                      {r.name.split(' ').map(w=>w[0]).join('')}
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 700, fontSize: 12, color: DARK }}>{r.name}</p>
-                      <p style={{ fontSize: 11, color: GRAY }}>{r.location}</p>
-                    </div>
-                    <div style={{ marginLeft: 'auto', color: '#fbbf24', fontSize: 12 }}>★★★★★</div>
-                  </div>
+            <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.7, marginBottom: 26 }}>{tr('land.lweb.text')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+              {['land.lweb.p1', 'land.lweb.p2', 'land.lweb.p3'].map((k) => (
+                <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 14, border: `1.5px solid ${BORDER}`, padding: '12px 16px' }}>
+                  <span style={{ width: 28, height: 28, borderRadius: '50%', background: '#e8faf2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{tr(k)}</span>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ ALL REVIEWS ══ */}
-      <section style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, padding: '72px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: DARK, letterSpacing: '-0.03em', marginBottom: 8 }}>
-              {tr('land.reviews.title')}
-            </h2>
-            <p style={{ fontSize: 16, color: GRAY }}>{tr('land.reviews.subtitle')}</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }} className="reviews-grid">
-            {reviews.map((r, i) => (
-              <div key={i} style={{ background: LIGHT, borderRadius: 20, border: `1.5px solid ${BORDER}`, padding: '22px 20px' }}>
-                <div style={{ color: '#fbbf24', fontSize: 14, marginBottom: 10 }}>★★★★★</div>
-                <p style={{ fontSize: 13, color: DARK, lineHeight: 1.65, marginBottom: 16 }}>"{r.text}"</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${CORAL}, #f06069)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
-                    {r.name.split(' ').map(w=>w[0]).join('')}
-                  </div>
-                  <div>
-                    <p style={{ fontWeight: 700, fontSize: 13, color: DARK }}>{r.name}</p>
-                    <p style={{ fontSize: 11, color: GRAY }}>{r.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <a href="/crear" className="btn-primary" style={{ height: 52, fontSize: 15, padding: '0 26px' }}>{tr('land.hero.cta')}</a>
+              <a href="https://lweb.ch" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ height: 52, fontSize: 15, padding: '0 24px' }}>{tr('land.lweb.cta')} ↗</a>
+            </div>
           </div>
         </div>
       </section>
